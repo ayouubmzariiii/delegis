@@ -1,6 +1,6 @@
 export const site = {
   name: 'Delegis',
-  url: (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.delegis.be').replace(/\/$/, ''),
+  url: (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) || 'https://www.delegis.be').replace(/\/$/, ''),
   email: 'hello@delegis.be',
   // Placeholders: replace with the real registered offices before going live.
   offices: [
