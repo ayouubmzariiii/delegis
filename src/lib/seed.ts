@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { addMessage, createClient, createDeliverable, createDossier, createInvoice, createRequest, createUser, deleteUserByEmail, findUserByEmail } from './db';
+import { addMessage, createAccess, requestAccess, createClient, createDeliverable, createDossier, createInvoice, createRequest, createUser, deleteUserByEmail, findUserByEmail } from './db';
 import { q } from './sql';
 import { putFile } from './storage';
 import { coda, csv, invoicePdf, reportPdf, ublInvoice } from './docgen';
@@ -9,8 +9,8 @@ import fr from '@/content/demo-fr';
 
 /** Delegis staff accounts used by the back-office (fictional people). */
 export const STAFF = [
-  { email: 'thomas.lambert@delegis.test', name: TEAM.manager.name },
-  { email: 'yasmine.elidrissi@delegis.test', name: TEAM.specialist.name },
+  { email: 'thomas.lambert@delegis.test', name: TEAM.manager.name, title: 'Responsable de compte', city: 'Bruxelles', phone: '+32 2 588 14 20' },
+  { email: 'yasmine.elidrissi@delegis.test', name: TEAM.specialist.name, title: 'Comptable senior · Encodage & TVA', city: 'Casablanca', phone: '+212 522 48 71 30' },
 ] as const;
 
 const SUPPLIERS = ['Brico Matériaux SA', 'Total Energies Belgium', 'Würth Belgium', 'Proximus SA', 'Engie Electrabel', 'Bol.com BV', 'Makro Cash & Carry', 'Securex ASBL'];
@@ -65,8 +65,9 @@ export async function seedDemo(opts: { password?: string; log?: (s: string) => v
   for (const s of STAFF) await deleteUserByEmail(s.email);
   await deleteUserByEmail(DEMO_EMAIL);
 
-  for (const s of STAFF) await createUser({ email: s.email, name: s.name, company: 'Delegis', passwordHash: hash, role: 'staff' });
-  const user = await createUser({ ...DEMO_USER, email: DEMO_EMAIL, passwordHash: hash, createdAt: new Date(Date.now() - 400 * 864e5).toISOString() });
+  const staff = [];
+  for (const s of STAFF) staff.push(await createUser({ ...s, company: 'Delegis', passwordHash: hash, role: 'staff' }));
+  const user = await createUser({ ...DEMO_USER, email: DEMO_EMAIL, passwordHash: hash, managerId: staff[0].id, createdAt: new Date(Date.now() - 400 * 864e5).toISOString() });
   log(`users: ${DEMO_EMAIL} + ${STAFF.length} staff`);
 
   const ws = buildDemoWorkspace(fr);
@@ -114,12 +115,25 @@ export async function seedDemo(opts: { password?: string; log?: (s: string) => v
   }
   log(`invoices: ${ws.invoices.length}`);
 
+  // Shared access: some provided by the firm, some still requested by the team.
+  const ago = (d: number) => new Date(Date.now() - d * 864e5).toISOString();
+  await createAccess(user.id, 'demo-client-brico', { label: 'Exact Online', kind: 'software', url: 'https://start.exactonline.be', login: 'delegis@cabinet-dubois.be', secret: 'Demo-Exact-2026!', notes: 'Utilisateur dédié Delegis, droits comptabilité uniquement. 2FA par e-mail vers comptabilite@cabinet-dubois.be.' }, DEMO_USER.name, { createdAt: ago(320) });
+  await createAccess(user.id, 'demo-client-brico', { label: 'Isabel 6 · CODA', kind: 'bank', url: 'https://www.isabel.eu', login: 'BRICOPRO-RO', secret: 'Demo-Isabel-2026!', notes: 'Accès en lecture seule, export CODA quotidien.' }, DEMO_USER.name, { createdAt: ago(300) });
+  await createAccess(user.id, 'demo-client-lemaire', { label: 'Winbooks on Web', kind: 'software', url: 'https://www.winbooksonweb.be', login: 'delegis.lemaire', secret: 'Demo-Winbooks-2026!', notes: '' }, DEMO_USER.name, { createdAt: ago(210) });
+  await requestAccess('demo-client-brico', { label: 'MyMinfin · mandat TVA', kind: 'tax', note: 'Pour déposer la déclaration TVA du T3 : ajoutez Delegis comme mandataire dans MyMinfin, ou partagez un accès au compte du dossier.' }, STAFF[0].name, { createdAt: ago(2) });
+  await requestAccess('demo-client-nord', { label: 'Yuki', kind: 'software', note: 'Invitez yasmine.elidrissi@delegis.test comme utilisateur « Comptable » sur l’administration Atelier Nord BV.' }, STAFF[1].name, { createdAt: ago(1) });
+  log('accesses: 5');
+
   // History reads as already seen, except the last few days.
   await q(`UPDATE notifications SET read = true WHERE user_id = $1 AND created_at < now() - interval '3 days'`, [user.id]);
   return user;
 }
 
-/** Seeds only if the demo account does not exist yet (used on first demo login, e.g. on a fresh Vercel deploy). */
+/**
+ * Seeds if the demo account is missing (first demo login on a fresh Vercel deploy), or if it predates
+ * the current demo model (no assigned account manager), so an existing database upgrades itself.
+ */
 export async function ensureDemoSeeded() {
-  if (!(await findUserByEmail(DEMO_EMAIL))) await seedDemo();
+  const demo = await findUserByEmail(DEMO_EMAIL);
+  if (!demo || !demo.managerId) await seedDemo();
 }

@@ -1,7 +1,7 @@
 # Delegis
 
 B2B accounting back-office outsourcing for Belgian SMEs and accounting firms, with a production team in Casablanca.
-Multilingual marketing site (5 locales), public price estimator, a multi-client **client portal** and a **staff back-office**,
+Multilingual marketing site (5 locales), public price estimator, a multi-client **client portal** and an **admin back-office**,
 running on Postgres with file storage — designed to deploy on **Vercel**.
 
 ## Stack
@@ -38,7 +38,7 @@ Limits: Vercel functions accept request bodies up to 4.5 MB, so uploads are capp
 
 ## What the system does
 
-**Client portal** (`/[locale]/portal`, role `client`) — one account (e.g. a fiduciary) manages several **client companies**, selected with the sidebar switcher (or "All clients"). Every record is scoped to one client.
+**Client portal** (`/[locale]/portal`, role `client`) — the account is an **accounting firm** (bureau comptable). It owns every dossier and files each one under one of its own **client companies**, selected with the sidebar switcher (or "All clients"). A new firm starts with no clients; nothing is created on its behalf. The sidebar shows the Delegis account manager an admin assigned to the firm (name, title, office, e-mail, phone).
 
 | Route | Purpose |
 |---|---|
@@ -47,18 +47,28 @@ Limits: Vercel functions accept request bodies up to 4.5 MB, so uploads are capp
 | `/portal/dossiers` · `/dossiers/[id]` | Upload documents for a client; processing timeline and files |
 | `/portal/requests` | Missing-document requests from the team, answered with a note and files |
 | `/portal/messages` | Conversation with the team |
+| `/portal/accesses` | Credentials the team needs for a client (accounting software, bank/CODA, MyMinfin…): the firm adds them, or provides those the team requested. Passwords are AES-256-GCM encrypted (`src/lib/vault.ts`), never sent back to the portal, and erased when revoked |
 | `/portal/documents`, `/portal/invoices` | Deliverables and Delegis invoices (real PDF/CSV files) |
 
-**Staff back-office** (`/[locale]/staff`, role `staff`) — the Delegis team's work queue across all accounts:
-advance a dossier (received → encoding → 4-eyes review → delivered), request missing documents, deliver files and reply to clients.
-Every action writes to the database and creates a notification on the client side.
+**Admin back-office** (`/[locale]/admin`, role `staff`; old `/staff` URLs redirect) — French UI for the Delegis team:
+
+| Route | Purpose |
+|---|---|
+| `/admin` | Work queue across all firms: advance a dossier (received → encoding → 4-eyes review → delivered), conversations |
+| `/admin/dossiers/[id]` | Files, timeline, reply, request a document, deliver a file, the client's accesses |
+| `/admin/cabinets` · `/cabinets/[id]` | Firms with workload; open a firm account, edit its details, assign its account manager, add clients for it, request accesses |
+| `/admin/acces` | Every shared access (requested first); reveal a password on demand; request a new one |
+| `/admin/equipe` | Team members and the profile firms see (title, office, phone); add a member |
+
+Every action writes to the database and creates a notification on the firm's side.
 
 ## Demo data
 
 `npm run db:seed` (`src/lib/seed.ts`) inserts, through the same data layer the app uses:
 
 - a client account `demo@delegis.test` (fiduciary *Cabinet Dubois & Associés*) with 3 client companies,
-- 2 staff accounts (`thomas.lambert@delegis.test`, `yasmine.elidrissi@delegis.test`),
+- 2 staff accounts (`thomas.lambert@delegis.test`, account manager of the demo firm; `yasmine.elidrissi@delegis.test`),
+- 3 shared accesses (encrypted) and 2 open access requests,
 - ~48 dossiers, messages, requests, deliverables and invoices over 12 months,
 - **real generated files** (`src/lib/docgen.ts`): valid PDF invoices and reports, Belgian CODA statements (128-char records), Peppol BIS 3.0 UBL invoices, CSV exports.
 
@@ -71,11 +81,11 @@ All people and companies are fictional. Turn the demo off with `DEMO_ENABLED=fal
 src/
   app/[locale]/(site)/     marketing pages (static, per locale)
   app/[locale]/portal/     client portal (dynamic, noindex)
-  app/[locale]/staff/      staff back-office (dynamic, noindex)
+  app/[locale]/admin/      admin back-office (dynamic, noindex)
   app/api/files/           authenticated downloads
-  components/              ui/ · layout/ · sections/ · portal/ · staff/
+  components/              ui/ · layout/ · sections/ · portal/ · admin/
   content/                 typed dictionaries per language
-  lib/                     sql · db · storage · seed · docgen · auth · actions · routes · seo · pricing · stats
+  lib/                     sql · db · vault · storage · seed · docgen · auth · actions · routes · seo · pricing · stats
 scripts/seed.ts            npm run db:seed
 ```
 

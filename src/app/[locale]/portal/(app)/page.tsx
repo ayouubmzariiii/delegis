@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { portalContext } from '@/lib/portal';
 import { daysUntil, fmtDate, fmtRelative, upcomingDeadlines } from '@/lib/format';
-import { TEAM } from '@/lib/demo';
 import { fmt } from '@/content/app';
 import { Card, StatusBadge, Avatar, Empty } from '@/components/portal/ui';
 import { ClientTable } from '@/components/portal/ClientCards';
@@ -15,10 +14,32 @@ export const metadata = { title: 'Delegis' };
 
 export default async function Overview({ params }: { params: Promise<{ locale: string }> }) {
   const ctx = await portalContext(params);
-  const { locale, user, ws, a, t, base, client } = ctx;
+  const { locale, user, ws, a, t, base, client, account, manager } = ctx;
   const o = a.overview;
   const hour = new Date().getHours();
   const hello = `${hour < 12 ? o.morning : hour < 18 ? o.afternoon : o.evening}, ${user.name.split(' ')[0]}`;
+
+  // A new firm: nothing can be filed until its first client exists.
+  if (!account.clients.length) {
+    return (
+      <>
+        <div className="mb-8">
+          <p className="text-sm font-semibold text-go-700">{user.company || user.name}</p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{hello}</h1>
+        </div>
+        <section className="rounded-2xl border border-line bg-white p-8 text-center shadow-card sm:p-12">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-go-50 text-go-600">
+            <Icon name="users" className="h-6 w-6" />
+          </span>
+          <h2 className="mt-5 font-display text-2xl font-bold">{a.firm.firstTitle}</h2>
+          <p className="mx-auto mt-2 max-w-lg text-ink-600">{a.firm.firstText}</p>
+          <Link href={`${base}/clients/new`} className={`${buttonClass('primary', 'lg')} mt-6`}>
+            <Icon name="plus" className="h-4 w-4" /> {a.firm.firstCta}
+          </Link>
+        </section>
+      </>
+    );
+  }
 
   // "All clients": just the client cards — pick one to start working.
   if (!client) {
@@ -120,9 +141,9 @@ export default async function Overview({ params }: { params: Promise<{ locale: s
           </p>
         )}
         <Link href={`${base}/messages`} className="flex items-center gap-3 text-sm md:ms-auto">
-          <Avatar name={TEAM.manager.name} size="sm" />
+          <Avatar name={manager?.name ?? 'Delegis'} size="sm" />
           <span>
-            <span className="block font-medium">{TEAM.manager.name}</span>
+            <span className="block font-medium">{manager ? manager.name : a.team.unassigned}</span>
             <span className="block text-xs text-ink-500">{o.write} →</span>
           </span>
         </Link>

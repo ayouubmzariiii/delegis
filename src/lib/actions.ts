@@ -8,7 +8,15 @@ import { isLocale, type Locale } from './i18n';
 import {
   addMessage,
   createClient,
-  ensureDefaultClient,
+  createAccess,
+  provideAccess,
+  revokeAccess,
+  requestAccess,
+  revealAccess,
+  assignManager,
+  updateFirm,
+  updateStaffProfile,
+  findUser,
   answerRequest,
   createDossier,
   createLead,
@@ -23,7 +31,7 @@ import {
   staffDossier,
   clientWorkspace,
 } from './db';
-import type { StoredFile, User } from './types';
+import type { AccessKind, StoredFile, User } from './types';
 import { DEMO_EMAIL } from './demo';
 import { STAFF, ensureDemoSeeded } from './seed';
 import { putFile } from './storage';
@@ -42,7 +50,7 @@ const refreshPortal = (l: Locale) => revalidatePath(portalPath(l), 'layout');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Vercel functions accept request bodies up to 4.5 MB; keep each file under that. */
 const MAX_FILE = 4 * 1024 * 1024;
-const landing = (u: User, l: Locale) => (u.role === 'staff' ? `/${l}/staff` : portalPath(l, '/welcome'));
+const landing = (u: User, l: Locale) => (u.role === 'staff' ? `/${l}/admin` : portalPath(l, '/welcome'));
 
 /* ---------- public ---------- */
 
@@ -65,7 +73,6 @@ export async function register(_: FormState, f: FormData): Promise<FormState> {
   if (!EMAIL_RE.test(email) || password.length < 8 || !str(f, 'name')) return { error: 'invalid' };
   if (await findUserByEmail(email)) return { error: 'exists' };
   const user = await createUser({ email, name: str(f, 'name', 120), company: str(f, 'company', 160), passwordHash: await bcrypt.hash(password, 10) });
-  await ensureDefaultClient(user);
   await createSession(user.id);
   redirect(portalPath(loc(f), '/welcome'));
 }
@@ -216,7 +223,7 @@ async function requireStaff() {
   return user;
 }
 const refreshStaff = (l: Locale) => {
-  revalidatePath(`/${l}/staff`, 'layout');
+  revalidatePath(`/${l}/admin`, 'layout');
   revalidatePath(portalPath(l), 'layout');
 };
 
@@ -261,5 +268,134 @@ export async function staffDeliver(_: FormState, f: FormData): Promise<FormState
   const stored = await putFile(`${d.userId}/deliverables/${file.name}`, Buffer.from(await file.arrayBuffer()), file.type || 'application/octet-stream');
   await createDeliverable({ userId: d.userId, clientId: d.clientId, title: str(f, 'title', 160) || file.name, kind, period: d.period, fileName: file.name, stored, size: file.size });
   refreshStaff(loc(f));
+  return { ok: true };
+}
+
+/* ---------- accesses (firm side) ---------- */
+
+const KINDS: AccessKind[] = ['software', 'bank', 'tax', 'other'];
+const kindOf = (f: FormData): AccessKind => {
+  const k = str(f, 'kind', 10) as AccessKind;
+  return KINDS.includes(k) ? k : 'other';
+};
+const urlOf = (f: FormData) => {
+  const u = str(f, 'url', 300);
+  return !u || /^https?:\/\//i.test(u) ? u : `https://${u}`;
+};
+
+/** Creates an access for a client, or fills in / updates an existing one (id given). */
+export async function saveAccess(_: FormState, f: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const id = str(f, 'accessId', 80);
+  const input = { url: urlOf(f), login: str(f, 'login', 200), secret: String(f.get('secret') ?? '').slice(0, 500), notes: str(f, 'notes', 1000) };
+  if (id) {
+    if (!(await provideAccess(user.id, id, input, user.name))) return { error: 'invalid' };
+  } else {
+    const clientId = await ownedClientId(user, str(f, 'clientId', 80));
+    const label = str(f, 'label', 120);
+    if (!clientId || !label) return { error: 'invalid' };
+    await createAccess(user.id, clientId, { ...input, label, kind: kindOf(f) }, user.name);
+  }
+  refreshPortal(loc(f));
+  revalidatePath(`/${loc(f)}/admin`, 'layout');
+  return { ok: true };
+}
+
+export async function withdrawAccess(f: FormData) {
+  const user = await requireUser();
+  await revokeAccess(user.id, str(f, 'accessId', 80), user.name);
+  refreshPortal(loc(f));
+}
+
+/* ---------- admin: accesses, firms, team ---------- */
+
+const refreshAdmin = (l: Locale) => {
+  revalidatePath(`/${l}/admin`, 'layout');
+  revalidatePath(portalPath(l), 'layout');
+};
+
+/** Asks a firm for an access to one of its clients' tools. */
+export async function adminRequestAccess(_: FormState, f: FormData): Promise<FormState> {
+  const staff = await requireStaff();
+  const label = str(f, 'label', 120);
+  if (!label || !(await requestAccess(str(f, 'clientId', 80), { label, kind: kindOf(f), note: str(f, 'note', 1000) }, staff.name))) return { error: 'invalid' };
+  refreshAdmin(loc(f));
+  return { ok: true };
+}
+
+/** Decrypts a shared password for the signed-in team member. */
+export async function adminRevealAccess(_: { secret?: string | null } | undefined, f: FormData) {
+  await requireStaff();
+  return { secret: await revealAccess(str(f, 'accessId', 80)) };
+}
+
+export async function adminAssignManager(f: FormData) {
+  await requireStaff();
+  const managerId = str(f, 'managerId', 80);
+  const m = managerId ? await findUser(managerId) : undefined;
+  await assignManager(str(f, 'firmId', 80), m?.role === 'staff' ? m.id : null);
+  refreshAdmin(loc(f));
+}
+
+/** Opens an account for a new accounting firm (the firm then signs in with this e-mail and password). */
+export async function adminCreateFirm(_: FormState, f: FormData): Promise<FormState> {
+  await requireStaff();
+  const email = str(f, 'email', 200).toLowerCase();
+  const password = String(f.get('password') ?? '');
+  const company = str(f, 'company', 160);
+  if (!EMAIL_RE.test(email) || password.length < 8 || !company || !str(f, 'name')) return { error: 'invalid' };
+  if (await findUserByEmail(email)) return { error: 'exists' };
+  const managerId = str(f, 'managerId', 80);
+  const firm = await createUser({
+    email,
+    name: str(f, 'name', 120),
+    company,
+    phone: str(f, 'phone', 40),
+    vatNumber: str(f, 'vatNumber', 40),
+    managerId: managerId && (await findUser(managerId))?.role === 'staff' ? managerId : undefined,
+    passwordHash: await bcrypt.hash(password, 10),
+  });
+  redirect(`/${loc(f)}/admin/cabinets/${firm.id}`);
+}
+
+export async function adminUpdateFirm(_: FormState, f: FormData): Promise<FormState> {
+  await requireStaff();
+  const company = str(f, 'company', 160);
+  const name = str(f, 'name', 120);
+  if (!company || !name) return { error: 'invalid' };
+  await updateFirm(str(f, 'firmId', 80), { company, name, phone: str(f, 'phone', 40), vatNumber: str(f, 'vatNumber', 40) });
+  refreshAdmin(loc(f));
+  return { ok: true };
+}
+
+/** Adds a client company to a firm on its behalf. */
+export async function adminAddClient(_: FormState, f: FormData): Promise<FormState> {
+  await requireStaff();
+  const firm = await findUser(str(f, 'firmId', 80));
+  const name = str(f, 'name', 160);
+  if (!firm || firm.role !== 'client' || !name) return { error: 'invalid' };
+  await createClient({ userId: firm.id, name, vatNumber: str(f, 'vatNumber', 40), software: str(f, 'software', 60), sector: str(f, 'sector', 60) });
+  refreshAdmin(loc(f));
+  return { ok: true };
+}
+
+/** Adds a Delegis team member (back-office access). */
+export async function adminCreateStaff(_: FormState, f: FormData): Promise<FormState> {
+  await requireStaff();
+  const email = str(f, 'email', 200).toLowerCase();
+  const password = String(f.get('password') ?? '');
+  if (!EMAIL_RE.test(email) || password.length < 8 || !str(f, 'name')) return { error: 'invalid' };
+  if (await findUserByEmail(email)) return { error: 'exists' };
+  await createUser({ email, name: str(f, 'name', 120), company: 'Delegis', role: 'staff', title: str(f, 'title', 80), city: str(f, 'city', 60), phone: str(f, 'phone', 40), passwordHash: await bcrypt.hash(password, 10) });
+  refreshAdmin(loc(f));
+  return { ok: true };
+}
+
+export async function adminUpdateStaff(_: FormState, f: FormData): Promise<FormState> {
+  await requireStaff();
+  const name = str(f, 'name', 120);
+  if (!name) return { error: 'invalid' };
+  await updateStaffProfile(str(f, 'staffId', 80), { name, title: str(f, 'title', 80), city: str(f, 'city', 60), phone: str(f, 'phone', 40) });
+  refreshAdmin(loc(f));
   return { ok: true };
 }

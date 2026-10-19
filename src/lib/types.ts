@@ -12,9 +12,17 @@ export type User = {
   phone?: string;
   vatNumber?: string;
   software?: string;
+  /** Staff only: job title and office shown to the firms they manage. */
+  title?: string;
+  city?: string;
+  /** Firms only: the Delegis account manager assigned by an admin. */
+  managerId?: string;
 };
 
-/** A client company managed under one account (e.g. a fiduciary's customer). */
+/** Public profile of a Delegis team member (no credentials). */
+export type TeamMember = Pick<User, 'id' | 'name' | 'email' | 'phone' | 'title' | 'city'>;
+
+/** A client company of the accounting firm (the account). Dossiers are always filed for one of them. */
 export type Client = {
   id: string;
   userId: string;
@@ -109,6 +117,30 @@ export type Notification = {
   read: boolean;
 };
 
+export type AccessKind = 'software' | 'bank' | 'tax' | 'other';
+
+/**
+ * Credentials a firm shares for one of its clients (accounting software, bank, MyMinfin…),
+ * or a request from Delegis for such access. The secret is encrypted at rest and never sent to the portal.
+ */
+export type Access = {
+  id: string;
+  userId: string;
+  clientId: string;
+  label: string;
+  kind: AccessKind;
+  url?: string;
+  login?: string;
+  hasSecret: boolean;
+  notes: string;
+  status: 'requested' | 'provided' | 'revoked';
+  requestNote?: string;
+  requestedBy?: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Lead = { id: string; createdAt: string; locale: string; data: Record<string, string> };
 
 /** Everything a client sees in the portal. */
@@ -120,4 +152,5 @@ export type Workspace = {
   deliverables: Deliverable[];
   invoices: Invoice[];
   notifications: Notification[];
+  accesses: Access[];
 };

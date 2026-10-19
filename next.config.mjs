@@ -25,6 +25,10 @@ const nextConfig = {
     remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
   },
   experimental: { serverActions: { bodySizeLimit: '100mb' } },
+  // The back-office moved from /staff to /admin.
+  async redirects() {
+    return [{ source: '/:locale/staff/:path*', destination: '/:locale/admin/:path*', permanent: true }];
+  },
   async headers() {
     return [
       {

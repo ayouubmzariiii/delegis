@@ -4,7 +4,6 @@ import type { PortalContext } from '@/lib/portal';
 import { ClientSwitcher } from './ClientSwitcher';
 import { logout, markAllRead } from '@/lib/actions';
 import { fmtRelative } from '@/lib/format';
-import { TEAM } from '@/lib/demo';
 import { getApp } from '@/content/app';
 import { Logo } from '@/components/ui/Logo';
 import { Icon } from '@/components/ui/Icon';
@@ -15,13 +14,14 @@ import { Avatar } from './ui';
 const kindIcon = { message: 'chat', request: 'inbox', status: 'folder', document: 'download', invoice: 'receipt' } as const;
 
 export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNode }) {
-  const { locale, user, ws, account, client } = ctx;
+  const { locale, user, ws, account, client, manager } = ctx;
   const a = getApp(locale);
   const openByClient = Object.fromEntries(account.clients.map((c) => [c.id, account.requests.filter((r) => r.clientId === c.id && r.status === 'open').length]));
   const clientName = (id: string) => account.clients.find((c) => c.id === id)?.name;
   const base = `/${locale}/portal`;
   const unread = ws.notifications.filter((n) => !n.read);
   const openRequests = ws.requests.filter((r) => r.status === 'open').length;
+  const pendingAccess = ws.accesses.filter((x) => x.status === 'requested').length;
   const unreadMessages = unread.filter((n) => n.kind === 'message').length;
   const items: NavItem[] = [
     { href: base, label: a.nav.overview, icon: 'home' },
@@ -29,6 +29,7 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
     { href: `${base}/dossiers`, label: a.nav.dossiers, icon: 'folder' },
     { href: `${base}/requests`, label: a.nav.requests, icon: 'inbox', badge: openRequests },
     { href: `${base}/messages`, label: a.nav.messages, icon: 'chat', badge: unreadMessages },
+    { href: `${base}/accesses`, label: a.nav.accesses, icon: 'key', badge: pendingAccess },
     { href: `${base}/documents`, label: a.nav.documents, icon: 'download' },
     { href: `${base}/invoices`, label: a.nav.invoices, icon: 'receipt' },
     { href: `${base}/settings`, label: a.nav.settings, icon: 'settings' },
@@ -40,19 +41,41 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
         <Logo />
       </Link>
 
+      <div className="flex items-center gap-3 px-2">
+        <Avatar name={user.company || user.name} tone="ink" size="md" />
+        <span className="min-w-0">
+          <span className="block text-[10px] font-semibold uppercase tracking-wider text-ink-500">{a.firm.label}</span>
+          <span className="block truncate text-sm font-semibold">{user.company || user.name}</span>
+        </span>
+      </div>
       <ClientSwitcher clients={account.clients} current={client} counts={openByClient} locale={locale} a={a.clients} />
       <nav aria-label="Portal" className="flex-1">
         <SideNav items={items} base={base} />
       </nav>
       <div className="rounded-xl bg-white p-3 ring-1 ring-line">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">{a.overview.teamTitle}</p>
-        <div className="mt-3 flex items-center gap-2.5">
-          <Avatar name={TEAM.manager.name} size="sm" />
-          <span className="min-w-0 text-sm">
-            <span className="block truncate font-medium">{TEAM.manager.name}</span>
-            <span className="block truncate text-[11px] text-ink-500">{a.overview.roleManager}</span>
-          </span>
-        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">{a.team.title}</p>
+        {manager ? (
+          <>
+            <div className="mt-3 flex items-center gap-2.5">
+              <Avatar name={manager.name} size="sm" />
+              <span className="min-w-0 text-sm">
+                <span className="block truncate font-medium">{manager.name}</span>
+                <span className="block truncate text-[11px] text-ink-500">{[manager.title, manager.city].filter(Boolean).join(' · ')}</span>
+              </span>
+            </div>
+            <div className="mt-2 space-y-0.5 text-[11px]">
+              <a href={`mailto:${manager.email}`} className="block truncate text-ink-600 hover:text-go-700">{manager.email}</a>
+              {manager.phone && (
+                <a href={`tel:${manager.phone.replace(/s/g, '')}`} dir="ltr" className="block text-ink-600 hover:text-go-700">{manager.phone}</a>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-sm font-medium">{a.team.unassigned}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{a.team.unassignedText}</p>
+          </>
+        )}
         <Link href={`${base}/messages`} className={`${buttonClass('secondary')} mt-3 h-9 w-full`}>
           <Icon name="chat" className="h-4 w-4" /> {a.overview.write}
         </Link>
@@ -74,7 +97,7 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
 
   return (
     <div className="min-h-screen bg-paper">
-      <aside className="fixed inset-y-0 start-0 hidden w-72 border-e border-line bg-paper-200/60 lg:block">{sidebar}</aside>
+      <aside className="fixed inset-y-0 start-0 hidden w-72 overflow-y-auto border-e border-line bg-paper-200/60 lg:block">{sidebar}</aside>
 
       <div className="lg:ps-72">
         {/* Top bar */}

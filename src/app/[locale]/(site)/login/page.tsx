@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: P) {
 export default async function LoginPage({ params, searchParams }: P) {
   const locale = await resolveLocale(params);
   const me = await currentUser();
-  if (me) redirect(me.role === 'staff' ? `/${locale}/staff` : href(locale, paths.portal()));
+  if (me) redirect(me.role === 'staff' ? `/${locale}/admin` : href(locale, paths.portal()));
   const mode = (await searchParams).mode === 'register' ? 'register' : 'login';
   const a = getDict(locale).auth;
   const demo = getUi(locale).demo;

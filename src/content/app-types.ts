@@ -35,6 +35,7 @@ export type AppText = {
     documents: string;
     invoices: string;
     settings: string;
+    accesses: string;
     logout: string;
     backToSite: string;
     notifications: string;
@@ -126,6 +127,42 @@ export type AppText = {
     security: string;
     securityText: string;
     demoNote: string;
+  };
+  /** The signed-in accounting firm (account owner of every dossier). */
+  firm: { label: string; clientsOf: string; firstTitle: string; firstText: string; firstCta: string };
+  /** The Delegis account manager assigned to the firm. */
+  team: { title: string; unassigned: string; unassignedText: string; email: string; call: string };
+  accesses: {
+    title: string;
+    intro: string; // {client}
+    security: string;
+    tip: string;
+    requestedTitle: string;
+    requestedBy: string; // {name} {d}
+    provide: string;
+    sharedTitle: string;
+    empty: string;
+    add: string;
+    label: string;
+    labelPh: string;
+    kind: string;
+    kinds: Record<'software' | 'bank' | 'tax' | 'other', string>;
+    url: string;
+    login: string;
+    secret: string;
+    secretKeep: string;
+    notes: string;
+    notesPh: string;
+    save: string;
+    saved: string;
+    edit: string;
+    revoke: string;
+    revokeConfirm: string;
+    status: Record<'requested' | 'provided' | 'revoked', string>;
+    encrypted: string;
+    noSecret: string;
+    updated: string; // {d}
+    revokedTitle: string;
   };
   notifications: { title: string; markRead: string; empty: string; kinds: Record<'message' | 'request' | 'status' | 'document' | 'invoice', string> };
 };

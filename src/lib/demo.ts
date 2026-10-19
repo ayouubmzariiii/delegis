@@ -200,6 +200,7 @@ function buildOne(text: DemoText, now: Date, c: DemoClient): Omit<Workspace, 'cl
     deliverables: tag(deliverablesSorted),
     invoices: tag(invoices).map((i) => ({ ...i, number: i.number.replace('DLG-', `DLG-${c.key.slice(0, 2).toUpperCase()}-`) })),
     notifications: c.rich ? tag(notifications) : tag(notifications.filter((n) => n.kind === 'request')),
+    accesses: [],
   };
 }
 
@@ -225,5 +226,7 @@ export function buildDemoWorkspace(text: DemoText, now = new Date()): Workspace 
     deliverables: byNew(flat('deliverables')),
     invoices: [...flat('invoices')].sort((a, b) => b.issuedAt.localeCompare(a.issuedAt)),
     notifications: byNew(flat('notifications')),
+    // Accesses are seeded separately (lib/seed): their secrets are encrypted at write time.
+    accesses: [],
   };
 }

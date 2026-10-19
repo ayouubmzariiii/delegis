@@ -11,7 +11,18 @@ import {
   markNotificationsRead,
   newId,
   staffQueue,
+  createAccess,
+  requestAccess,
+  provideAccess,
+  revokeAccess,
+  revealAccess,
+  listClients,
+  assignManager,
+  findUser,
+  managerOf,
+  listFirms,
 } from './db';
+import { q } from './sql';
 
 /** Integration tests against a real (in-memory) Postgres via PGlite. */
 describe('data layer', () => {
@@ -72,5 +83,40 @@ describe('data layer', () => {
   it('exposes every account’s dossiers to the staff queue with client names', async () => {
     const q = await staffQueue();
     expect(q.find((d) => d.id === dossierId)?.clientName).toBe('Client One');
+  });
+
+  it('never turns the firm itself into one of its clients', async () => {
+    const firm = await createUser({ email: `firm-${newId()}@test.be`, name: 'Carla', company: 'Cabinet C', passwordHash: 'x' });
+    expect(await listClients(firm.id)).toEqual([]);
+  });
+
+  it('stores access passwords encrypted and only reveals them to the team', async () => {
+    const acc = await createAccess(alice.id, aClient.id, { label: 'Exact Online', kind: 'software', login: 'delegis', secret: 'S3cret!' }, 'Alice');
+    expect(acc.hasSecret).toBe(true);
+    const [raw] = await q<{ secret: string }>('SELECT secret FROM accesses WHERE id = $1', [acc.id]);
+    expect(raw.secret).not.toContain('S3cret!');
+    expect(await revealAccess(acc.id)).toBe('S3cret!');
+    // Another firm cannot touch it.
+    expect(await revokeAccess(bob.id, acc.id, 'Bob')).toBeUndefined();
+    await revokeAccess(alice.id, acc.id, 'Alice');
+    expect(await revealAccess(acc.id)).toBeNull();
+  });
+
+  it('lets the team request an access that the firm then provides', async () => {
+    const req = await requestAccess(aClient2.id, { label: 'MyMinfin', kind: 'tax', note: 'Mandat TVA' }, 'Thomas');
+    expect(req?.status).toBe('requested');
+    expect((await getWorkspace(alice.id)).notifications.some((n) => n.href === 'accesses')).toBe(true);
+    const done = await provideAccess(alice.id, req!.id, { login: 'alice', secret: 'pw' }, 'Alice');
+    expect(done?.status).toBe('provided');
+    expect(await revealAccess(req!.id)).toBe('pw');
+  });
+
+  it('shows the firm its assigned account manager', async () => {
+    const staff = await createUser({ email: `staff-${newId()}@delegis.test`, name: 'Thomas', company: 'Delegis', role: 'staff', title: 'Responsable de compte', city: 'Bruxelles', passwordHash: 'x' });
+    expect(await managerOf((await findUser(alice.id))!)).toBeNull();
+    await assignManager(alice.id, staff.id);
+    const m = await managerOf((await findUser(alice.id))!);
+    expect(m).toMatchObject({ name: 'Thomas', title: 'Responsable de compte', city: 'Bruxelles' });
+    expect((await listFirms()).find((f) => f.id === alice.id)?.managerName).toBe('Thomas');
   });
 });

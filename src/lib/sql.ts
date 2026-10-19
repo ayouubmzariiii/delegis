@@ -108,6 +108,27 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications(user_id, created_at DESC);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS title text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS city text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS manager_id text REFERENCES users(id) ON DELETE SET NULL;
+CREATE TABLE IF NOT EXISTS accesses (
+  id text PRIMARY KEY,
+  user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  client_id text NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  label text NOT NULL,
+  kind text NOT NULL CHECK (kind IN ('software', 'bank', 'tax', 'other')),
+  url text,
+  login text,
+  secret text,
+  notes text NOT NULL DEFAULT '',
+  status text NOT NULL CHECK (status IN ('requested', 'provided', 'revoked')),
+  request_note text,
+  requested_by text,
+  updated_by text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS accesses_client_idx ON accesses(client_id, status);
 CREATE TABLE IF NOT EXISTS leads (
   id text PRIMARY KEY,
   locale text NOT NULL,

@@ -1,9 +1,10 @@
 import 'server-only';
 import crypto from 'crypto';
 import { q } from './sql';
-import type { Client, Deliverable, Dossier, DossierStatus, Invoice, Message, Notification, RequestItem, StoredFile, TimelineStep, User, Workspace } from './types';
+import { open, seal } from './vault';
+import type { Access, AccessKind, TeamMember, Client, Deliverable, Dossier, DossierStatus, Invoice, Message, Notification, RequestItem, StoredFile, TimelineStep, User, Workspace } from './types';
 
-export type { Client, Deliverable, Dossier, Invoice, Lead, Message, Notification, RequestItem, StoredFile, User, Workspace } from './types';
+export type { Access, TeamMember, Client, Deliverable, Dossier, Invoice, Lead, Message, Notification, RequestItem, StoredFile, User, Workspace } from './types';
 
 /*
  * Data access on Postgres (Neon in production, PGlite locally — see lib/sql).
@@ -30,7 +31,28 @@ const toUser = (r: R): User => ({
   phone: opt(r.phone),
   vatNumber: opt(r.vat_number),
   software: opt(r.software),
+  title: opt(r.title),
+  city: opt(r.city),
+  managerId: opt(r.manager_id),
   createdAt: iso(r.created_at),
+});
+const toMember = (u: User): TeamMember => ({ id: u.id, name: u.name, email: u.email, phone: u.phone, title: u.title, city: u.city });
+const toAccess = (r: R): Access => ({
+  id: String(r.id),
+  userId: String(r.user_id),
+  clientId: String(r.client_id),
+  label: String(r.label),
+  kind: r.kind as AccessKind,
+  url: opt(r.url),
+  login: opt(r.login),
+  hasSecret: r.secret !== null && r.secret !== undefined,
+  notes: String(r.notes ?? ''),
+  status: r.status as Access['status'],
+  requestNote: opt(r.request_note),
+  requestedBy: opt(r.requested_by),
+  updatedBy: opt(r.updated_by),
+  createdAt: iso(r.created_at),
+  updatedAt: iso(r.updated_at),
 });
 const toClient = (r: R): Client => ({ id: String(r.id), userId: String(r.user_id), name: String(r.name), vatNumber: opt(r.vat_number), software: opt(r.software), sector: opt(r.sector), createdAt: iso(r.created_at) });
 const toDossier = (r: R): Dossier => ({
@@ -118,9 +140,9 @@ export async function findUser(id: string) {
 
 export async function createUser(u: Omit<User, 'id' | 'createdAt' | 'role'> & { id?: string; role?: User['role']; createdAt?: string }) {
   const [r] = await q(
-    `INSERT INTO users (id, email, name, company, password_hash, role, phone, vat_number, software, created_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-    [u.id ?? newId(), u.email.toLowerCase(), u.name, u.company, u.passwordHash, u.role ?? 'client', u.phone ?? null, u.vatNumber ?? null, u.software ?? null, u.createdAt ?? new Date().toISOString()],
+    `INSERT INTO users (id, email, name, company, password_hash, role, phone, vat_number, software, title, city, manager_id, created_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+    [u.id ?? newId(), u.email.toLowerCase(), u.name, u.company, u.passwordHash, u.role ?? 'client', u.phone || null, u.vatNumber || null, u.software || null, u.title || null, u.city || null, u.managerId || null, u.createdAt ?? new Date().toISOString()],
   );
   return toUser(r);
 }
@@ -135,11 +157,9 @@ export async function updateUser(id: string, p: Partial<Pick<User, 'name' | 'com
 
 /* ---------- clients ---------- */
 
-export async function ensureDefaultClient(user: User) {
-  if (user.role === 'staff') return [];
-  const rows = await q(`SELECT * FROM clients WHERE user_id = $1`, [user.id]);
-  if (rows.length) return rows.map(toClient);
-  return [await createClient({ userId: user.id, name: user.company || user.name, vatNumber: user.vatNumber, software: user.software })];
+/** The firm's client companies. The firm itself is the account owner, never one of its own clients. */
+export async function listClients(userId: string) {
+  return (await q(`SELECT * FROM clients WHERE user_id = $1 ORDER BY name`, [userId])).map(toClient);
 }
 
 export async function createClient(c: Omit<Client, 'id' | 'createdAt'> & { id?: string; createdAt?: string }) {
@@ -165,7 +185,7 @@ export async function getWorkspace(userId: string, clientId: string = ALL_CLIENT
   const scoped = clientId !== ALL_CLIENTS;
   const where = scoped ? `user_id = $1 AND client_id = $2` : `user_id = $1`;
   const p = scoped ? [userId, clientId] : [userId];
-  const [clients, dossiers, messages, requests, deliverables, invoices, notifications] = await Promise.all([
+  const [clients, dossiers, messages, requests, deliverables, invoices, notifications, accesses] = await Promise.all([
     q(`SELECT * FROM clients WHERE user_id = $1 ORDER BY name`, [userId]),
     q(`SELECT * FROM dossiers WHERE ${where} ORDER BY created_at DESC`, p),
     q(`SELECT * FROM messages WHERE ${where} ORDER BY created_at ASC`, p),
@@ -173,6 +193,7 @@ export async function getWorkspace(userId: string, clientId: string = ALL_CLIENT
     q(`SELECT * FROM deliverables WHERE ${where} ORDER BY created_at DESC`, p),
     q(`SELECT * FROM invoices WHERE ${where} ORDER BY issued_at DESC`, p),
     q(`SELECT * FROM notifications WHERE ${where} ORDER BY created_at DESC LIMIT 50`, p),
+    q(`SELECT * FROM accesses WHERE ${where} ORDER BY (status = 'requested') DESC, label`, p),
   ]);
   return {
     clients: clients.map(toClient),
@@ -182,6 +203,7 @@ export async function getWorkspace(userId: string, clientId: string = ALL_CLIENT
     deliverables: deliverables.map(toDeliverable),
     invoices: invoices.map(toInvoice),
     notifications: notifications.map(toNotification),
+    accesses: accesses.map(toAccess),
   };
 }
 
@@ -340,4 +362,121 @@ export async function createInvoice(i: Omit<Invoice, 'id'> & { id?: string }) {
 /** Removes a user and (via ON DELETE CASCADE) all of their data. Used by the seed to rebuild the demo. */
 export async function deleteUserByEmail(email: string) {
   await q(`DELETE FROM users WHERE email = $1`, [email.toLowerCase()]);
+}
+
+/* ---------- accesses ---------- */
+
+export type AccessInput = { label: string; kind: AccessKind; url?: string; login?: string; secret?: string; notes?: string };
+
+/** The firm shares an access for one of its clients. */
+export async function createAccess(userId: string, clientId: string, a: AccessInput, by: string, opts: { id?: string; createdAt?: string } = {}) {
+  const at = opts.createdAt ?? new Date().toISOString();
+  const [r] = await q(
+    `INSERT INTO accesses (id, user_id, client_id, label, kind, url, login, secret, notes, status, updated_by, created_at, updated_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'provided',$10,$11,$11) RETURNING *`,
+    [opts.id ?? newId(), userId, clientId, a.label, a.kind, a.url || null, a.login || null, a.secret ? seal(a.secret) : null, a.notes ?? '', by, at],
+  );
+  return toAccess(r);
+}
+
+/** Delegis asks a firm for an access; the firm sees it on its Accès page and in its notifications. */
+export async function requestAccess(clientId: string, a: { label: string; kind: AccessKind; note: string }, by: string, opts: { createdAt?: string } = {}) {
+  const [c] = await q(`SELECT user_id FROM clients WHERE id = $1`, [clientId]);
+  if (!c) return undefined;
+  const at = opts.createdAt ?? new Date().toISOString();
+  const [r] = await q(
+    `INSERT INTO accesses (id, user_id, client_id, label, kind, status, request_note, requested_by, created_at, updated_at)
+     VALUES ($1,$2,$3,$4,$5,'requested',$6,$7,$8,$8) RETURNING *`,
+    [newId(), c.user_id, clientId, a.label, a.kind, a.note, by, at],
+  );
+  const acc = toAccess(r);
+  await notify({ userId: acc.userId, clientId, kind: 'request', text: a.label, href: 'accesses', createdAt: at });
+  return acc;
+}
+
+/** The firm fills in (or updates) an access it owns. An empty secret keeps the current one. */
+export async function provideAccess(userId: string, id: string, a: Omit<AccessInput, 'label' | 'kind'>, by: string) {
+  const [r] = await q(
+    `UPDATE accesses SET url = COALESCE($3, url), login = COALESCE($4, login), secret = COALESCE($5, secret), notes = COALESCE($6, notes),
+       status = 'provided', updated_by = $7, updated_at = now()
+     WHERE id = $1 AND user_id = $2 RETURNING *`,
+    [id, userId, a.url || null, a.login || null, a.secret ? seal(a.secret) : null, a.notes || null, by],
+  );
+  return r ? toAccess(r) : undefined;
+}
+
+/** The firm withdraws an access: the stored secret is erased. */
+export async function revokeAccess(userId: string, id: string, by: string) {
+  const [r] = await q(`UPDATE accesses SET status = 'revoked', secret = NULL, updated_by = $3, updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING *`, [id, userId, by]);
+  return r ? toAccess(r) : undefined;
+}
+
+/** Staff only: decrypts a secret for use. */
+export async function revealAccess(id: string) {
+  const [r] = await q(`SELECT secret FROM accesses WHERE id = $1 AND status = 'provided'`, [id]);
+  return r?.secret ? open(String(r.secret)) : null;
+}
+
+export type AccessRow = Access & { clientName: string; firmName: string };
+
+export async function allAccesses(firmId?: string) {
+  const rows = await q(
+    `SELECT a.*, c.name AS client_name, u.company AS firm_name FROM accesses a JOIN clients c ON c.id = a.client_id JOIN users u ON u.id = a.user_id
+     ${firmId ? 'WHERE a.user_id = $1' : ''} ORDER BY (a.status = 'requested') DESC, a.updated_at DESC`,
+    firmId ? [firmId] : [],
+  );
+  return rows.map((r) => ({ ...toAccess(r), clientName: String(r.client_name), firmName: String(r.firm_name) }) as AccessRow);
+}
+
+/* ---------- admin: firms and team ---------- */
+
+/** The Delegis account manager assigned to a firm, if any. */
+export async function managerOf(user: User): Promise<TeamMember | null> {
+  if (!user.managerId) return null;
+  const m = await findUser(user.managerId);
+  return m && m.role === 'staff' ? toMember(m) : null;
+}
+
+export async function listTeam() {
+  return (await q(`SELECT * FROM users WHERE role = 'staff' ORDER BY name`)).map((r) => toMember(toUser(r)));
+}
+
+export async function updateStaffProfile(id: string, p: { name: string; title?: string; city?: string; phone?: string }) {
+  await q(`UPDATE users SET name = $2, title = $3, city = $4, phone = $5 WHERE id = $1 AND role = 'staff'`, [id, p.name, p.title || null, p.city || null, p.phone || null]);
+}
+
+export type FirmRow = User & { clients: number; dossiers: number; open: number; pendingAccess: number; lastActivity?: string; managerName?: string };
+
+/** Every accounting firm (client account) with its workload. */
+export async function listFirms() {
+  const rows = await q(
+    `SELECT u.*, m.name AS manager_name,
+       (SELECT count(*) FROM clients c WHERE c.user_id = u.id) AS n_clients,
+       (SELECT count(*) FROM dossiers d WHERE d.user_id = u.id) AS n_dossiers,
+       (SELECT count(*) FROM dossiers d WHERE d.user_id = u.id AND d.status <> 'done') AS n_open,
+       (SELECT count(*) FROM accesses a WHERE a.user_id = u.id AND a.status = 'requested') AS n_access,
+       (SELECT max(d.created_at) FROM dossiers d WHERE d.user_id = u.id) AS last_activity
+     FROM users u LEFT JOIN users m ON m.id = u.manager_id
+     WHERE u.role = 'client' ORDER BY u.company, u.name`,
+  );
+  return rows.map(
+    (r) =>
+      ({
+        ...toUser(r),
+        clients: Number(r.n_clients),
+        dossiers: Number(r.n_dossiers),
+        open: Number(r.n_open),
+        pendingAccess: Number(r.n_access),
+        lastActivity: r.last_activity ? iso(r.last_activity) : undefined,
+        managerName: opt(r.manager_name),
+      }) as FirmRow,
+  );
+}
+
+export async function assignManager(firmId: string, managerId: string | null) {
+  await q(`UPDATE users SET manager_id = $2 WHERE id = $1 AND role = 'client'`, [firmId, managerId]);
+}
+
+export async function updateFirm(id: string, p: { company: string; name: string; phone?: string; vatNumber?: string }) {
+  await q(`UPDATE users SET company = $2, name = $3, phone = $4, vat_number = $5 WHERE id = $1 AND role = 'client'`, [id, p.company, p.name, p.phone || null, p.vatNumber || null]);
 }

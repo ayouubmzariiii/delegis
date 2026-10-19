@@ -1,6 +1,6 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { ALL_CLIENTS, ensureDefaultClient, getWorkspace } from './db';
+import { ALL_CLIENTS, getWorkspace, listClients } from './db';
 import type { Client, User } from './types';
 
 export const CLIENT_COOKIE = 'delegis_client';
@@ -19,7 +19,7 @@ export async function selectedClientId(user: User, clients?: Client[]): Promise<
 
 /** Validates a client id coming from a form; it must belong to the user. */
 export async function ownedClientId(user: User, id: string | null | undefined): Promise<string | null> {
-  const clients = await ensureDefaultClient(user);
+  const clients = await listClients(user.id);
   if (id && clients.some((c) => c.id === id)) return id;
   const selected = await selectedClientId(user, clients);
   return selected === ALL_CLIENTS ? null : selected;

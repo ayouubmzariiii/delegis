@@ -6,7 +6,8 @@ import { clientWorkspace, staffDossier } from '@/lib/db';
 import { fmtBytes, fmtDateTime, fmtRelative } from '@/lib/format';
 import type { TimelineStep } from '@/lib/types';
 import { Card, StatusBadge, Avatar } from '@/components/portal/ui';
-import { DeliverForm, ReplyForm, RequestForm } from '@/components/staff/forms';
+import { DeliverForm, ReplyForm, RequestForm, RequestAccessForm } from '@/components/admin/forms';
+import { AccessTable } from '@/components/admin/AccessTable';
 import { Icon } from '@/components/ui/Icon';
 import { buttonClass, cx } from '@/components/ui/primitives';
 
@@ -32,13 +33,16 @@ export default async function StaffDossier({ params }: { params: Promise<{ local
 
   return (
     <>
-      <Link href={`/${locale}/staff`} className="text-sm text-ink-500 hover:text-ink">
+      <Link href={`/${locale}/admin`} className="text-sm text-ink-500 hover:text-ink">
         ← File de travail
       </Link>
       <div className="mb-6 mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-go-700">
-            {client.name} · {d.accountName}
+            {client.name} ·{' '}
+            <Link href={`/${locale}/admin/cabinets/${d.userId}`} className="hover:underline">
+              {d.accountName}
+            </Link>
           </p>
           <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">{d.name}</h1>
           <p className="mt-2 flex items-center gap-3 text-sm text-ink-600">
@@ -109,6 +113,15 @@ export default async function StaffDossier({ params }: { params: Promise<{ local
         </div>
 
         <div className="space-y-6">
+          <Card title={`Accès du client · ${ws.accesses.filter((x) => x.status === 'provided').length}`} pad={false}>
+            <AccessTable rows={ws.accesses.filter((x) => x.status !== 'revoked').map((x) => ({ ...x, clientName: client.name, firmName: d.accountName }))} locale={locale} showFirm={false} />
+            <details className="border-t border-line">
+              <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-go-700">Demander un accès</summary>
+              <div className="px-5 pb-5">
+                <RequestAccessForm locale={locale} clients={[{ id: client.id, name: client.name }]} />
+              </div>
+            </details>
+          </Card>
           <Card title="Demander une pièce">
             <RequestForm locale={locale} dossierId={d.id} />
             {requests.length > 0 && (
