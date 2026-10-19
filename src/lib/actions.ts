@@ -78,7 +78,10 @@ export async function register(_: FormState, f: FormData): Promise<FormState> {
 }
 
 export async function login(_: FormState, f: FormData): Promise<FormState> {
-  const user = await findUserByEmail(str(f, 'email', 200));
+  const email = str(f, 'email', 200).toLowerCase();
+  // Demo accounts are created on first use, whether through a demo button or a password login.
+  if ((await demoEnabled()) && (email === DEMO_EMAIL || STAFF.some((s) => s.email === email))) await ensureDemoSeeded();
+  const user = await findUserByEmail(email);
   if (!user || !(await bcrypt.compare(String(f.get('password') ?? ''), user.passwordHash))) return { error: 'invalid' };
   await createSession(user.id);
   redirect(landing(user, loc(f)));
