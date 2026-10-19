@@ -12,6 +12,9 @@ import { demoEnabled } from '@/lib/actions';
 import { DemoButton } from '@/components/portal/DemoButton';
 import { getApp } from '@/content/app';
 
+// The first demo login seeds the demo (hundreds of generated files): give it room on Vercel.
+export const maxDuration = 300;
+
 type P = { params: Promise<{ locale: string }>; searchParams: Promise<{ mode?: string }> };
 
 export async function generateMetadata({ params }: P) {

@@ -129,6 +129,17 @@ CREATE TABLE IF NOT EXISTS accesses (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS accesses_client_idx ON accesses(client_id, status);
+CREATE TABLE IF NOT EXISTS stored_files (
+  id text PRIMARY KEY,
+  key text NOT NULL,
+  content_type text NOT NULL,
+  data text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS app_locks (
+  name text PRIMARY KEY,
+  taken_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS leads (
   id text PRIMARY KEY,
   locale text NOT NULL,

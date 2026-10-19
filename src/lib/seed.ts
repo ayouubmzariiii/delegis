@@ -64,6 +64,8 @@ export async function seedDemo(opts: { password?: string; log?: (s: string) => v
 
   for (const s of STAFF) await deleteUserByEmail(s.email);
   await deleteUserByEmail(DEMO_EMAIL);
+  // Files of a previous demo stored in Postgres (keys start with the owner's id).
+  await q(`DELETE FROM stored_files WHERE key LIKE $1`, [`${DEMO_USER.id}/%`]);
 
   const staff = [];
   for (const s of STAFF) staff.push(await createUser({ ...s, company: 'Delegis', passwordHash: hash, role: 'staff' }));
@@ -129,11 +131,33 @@ export async function seedDemo(opts: { password?: string; log?: (s: string) => v
   return user;
 }
 
+/** The demo is complete once its last step (invoices) is in; a seed interrupted earlier is redone. */
+async function demoComplete() {
+  const demo = await findUserByEmail(DEMO_EMAIL);
+  if (!demo?.managerId) return false;
+  const [r] = await q<{ n: string }>(`SELECT count(*) AS n FROM invoices WHERE user_id = $1`, [demo.id]);
+  return Number(r?.n) > 0;
+}
+
 /**
- * Seeds if the demo account is missing (first demo login on a fresh Vercel deploy), or if it predates
- * the current demo model (no assigned account manager), so an existing database upgrades itself.
+ * Seeds the demo on first use (demo button or demo password login), e.g. on a fresh Vercel deploy.
+ * Also redoes a seed that was interrupted or predates the current demo model.
+ * A row lock keeps concurrent serverless invocations from seeding at the same time.
  */
 export async function ensureDemoSeeded() {
-  const demo = await findUserByEmail(DEMO_EMAIL);
-  if (!demo || !demo.managerId) await seedDemo();
+  if (await demoComplete()) return;
+  const got = await q(
+    `INSERT INTO app_locks (name) VALUES ('demo-seed') ON CONFLICT (name) DO UPDATE SET taken_at = now()
+     WHERE app_locks.taken_at < now() - interval '5 minutes' RETURNING name`,
+  );
+  if (!got.length) {
+    // Another request is seeding: wait for it (up to ~90 s).
+    for (let i = 0; i < 45 && !(await demoComplete()); i++) await new Promise((r) => setTimeout(r, 2000));
+    return;
+  }
+  try {
+    if (!(await demoComplete())) await seedDemo();
+  } finally {
+    await q(`DELETE FROM app_locks WHERE name = 'demo-seed'`);
+  }
 }
