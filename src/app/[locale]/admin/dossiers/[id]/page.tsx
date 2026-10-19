@@ -33,14 +33,14 @@ export default async function StaffDossier({ params }: { params: Promise<{ local
 
   return (
     <>
-      <Link href={`/${locale}/admin`} className="text-sm text-ink-500 hover:text-ink">
+      <Link href={`/admin`} className="text-sm text-ink-500 hover:text-ink">
         ← File de travail
       </Link>
       <div className="mb-6 mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-go-700">
             {client.name} ·{' '}
-            <Link href={`/${locale}/admin/cabinets/${d.userId}`} className="hover:underline">
+            <Link href={`/admin/cabinets/${d.userId}`} className="hover:underline">
               {d.accountName}
             </Link>
           </p>

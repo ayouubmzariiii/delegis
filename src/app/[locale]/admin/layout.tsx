@@ -17,11 +17,11 @@ export default async function AdminLayout({ children, params }: { children: Reac
   const locale = await resolveLocale(params);
   const user = await currentUser();
   if (!user) redirect(`/${locale}/login`);
-  if (user.role !== 'staff') redirect(`/${locale}/portal`);
+  if (user.role !== 'staff') redirect(`/portal`);
   const [c] = await q<{ queue: string; access: string }>(
     `SELECT (SELECT count(*) FROM dossiers WHERE status = 'received') AS queue, (SELECT count(*) FROM accesses WHERE status = 'requested') AS access`,
   );
-  const base = `/${locale}/admin`;
+  const base = `/admin`;
   return (
     <div className="min-h-screen bg-paper">
       <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">

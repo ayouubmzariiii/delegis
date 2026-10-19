@@ -31,11 +31,11 @@ export function ClientSwitcher({
   locale: string;
   a: AppText['clients'];
 }) {
-  const pathname = usePathname() ?? `/${locale}/portal`;
+  const pathname = usePathname() ?? `/portal`;
   // Detail pages (e.g. a dossier) belong to one client, so switching goes back to the list.
   const back = pathname.replace(/\/dossiers\/[^/]+$/, '/dossiers');
   const multi = clients.length > 1;
-  const base = `/${locale}/portal`;
+  const base = `/portal`;
 
   const Option = ({ id, label, sub, active, badge }: { id: string; label: string; sub?: string; active: boolean; badge?: number }) => (
     <form action={selectClient}>

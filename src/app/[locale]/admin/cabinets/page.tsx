@@ -10,7 +10,7 @@ import { Icon } from '@/components/ui/Icon';
 export default async function FirmsPage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
   const [firms, team] = await Promise.all([listFirms(), listTeam()]);
-  const base = `/${locale}/admin`;
+  const base = `/admin`;
   const unassigned = firms.filter((f) => !f.managerName).length;
 
   return (

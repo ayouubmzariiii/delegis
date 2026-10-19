@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { resolveLocale } from '@/lib/params';
 import { buildMetadata } from '@/lib/seo';
-import { href, paths } from '@/lib/routes';
+import { paths } from '@/lib/routes';
 import { currentUser } from '@/lib/auth';
 import { getDict } from '@/content';
 import { AuthForm } from '@/components/sections/Forms';
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: P) {
 export default async function LoginPage({ params, searchParams }: P) {
   const locale = await resolveLocale(params);
   const me = await currentUser();
-  if (me) redirect(me.role === 'staff' ? `/${locale}/admin` : href(locale, paths.portal()));
+  if (me) redirect(me.role === 'staff' ? '/admin' : '/portal');
   const mode = (await searchParams).mode === 'register' ? 'register' : 'login';
   const a = getDict(locale).auth;
   const demo = getUi(locale).demo;

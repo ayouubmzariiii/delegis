@@ -38,7 +38,9 @@ Limits: Vercel functions accept request bodies up to 4.5 MB, so uploads are capp
 
 ## What the system does
 
-**Client portal** (`/[locale]/portal`, role `client`) — the account is an **accounting firm** (bureau comptable). It owns every dossier and files each one under one of its own **client companies**, selected with the sidebar switcher (or "All clients"). A new firm starts with no clients; nothing is created on its behalf. The sidebar shows the Delegis account manager an admin assigned to the firm (name, title, office, e-mail, phone).
+App screens have no language prefix: `/portal` and `/admin` are rewritten by `src/middleware.ts` to the `[locale]` routes. The admin is French; the portal uses the language the user signed in with (cookie `delegis_lang`). Old `/<locale>/portal…` URLs redirect.
+
+**Client portal** (`/portal`, role `client`) — the account is an **accounting firm** (bureau comptable). It owns every dossier and files each one under one of its own **client companies**, selected with the sidebar switcher (or "All clients"). A new firm starts with no clients; nothing is created on its behalf. The sidebar shows the Delegis account manager an admin assigned to the firm (name, title, office, e-mail, phone).
 
 | Route | Purpose |
 |---|---|
@@ -50,7 +52,7 @@ Limits: Vercel functions accept request bodies up to 4.5 MB, so uploads are capp
 | `/portal/accesses` | Credentials the team needs for a client (accounting software, bank/CODA, MyMinfin…): the firm adds them, or provides those the team requested. Passwords are AES-256-GCM encrypted (`src/lib/vault.ts`), never sent back to the portal, and erased when revoked |
 | `/portal/documents`, `/portal/invoices` | Deliverables and Delegis invoices (real PDF/CSV files) |
 
-**Admin back-office** (`/[locale]/admin`, role `staff`; old `/staff` URLs redirect) — French UI for the Delegis team:
+**Admin back-office** (`/admin`, role `staff`; old `/staff` and `/fr-be/admin` URLs redirect) — French UI for the Delegis team:
 
 | Route | Purpose |
 |---|---|

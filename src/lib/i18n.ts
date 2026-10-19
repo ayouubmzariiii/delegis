@@ -19,3 +19,6 @@ export const localeMeta: Record<
 export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value);
 }
+
+/** Language of the app screens (/portal), which have no locale in their URL. */
+export const LANG_COOKIE = 'delegis_lang';

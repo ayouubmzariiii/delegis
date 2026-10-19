@@ -18,7 +18,7 @@ export default async function StaffHome({ params, searchParams }: { params: Prom
   const [queue, all, inbox] = await Promise.all([staffQueue(filter), staffQueue(), staffInbox()]);
   const count = (s: DossierStatus) => all.filter((d) => d.status === s).length;
   const waiting = inbox.filter((m) => m.author === 'client');
-  const base = `/${locale}/admin`;
+  const base = `/admin`;
 
   return (
     <>

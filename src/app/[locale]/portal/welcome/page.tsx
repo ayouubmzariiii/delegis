@@ -13,5 +13,5 @@ export default async function WelcomePage({ params }: { params: Promise<{ locale
   const user = await currentUser();
   if (!user) redirect(`/${locale}/login`);
   const w = getApp(locale).welcome;
-  return <WelcomeSequence title={fmt(w.title, { name: user.name.split(' ')[0] })} subtitle={w.subtitle} steps={w.steps} skip={w.skip} href={`/${locale}/portal`} />;
+  return <WelcomeSequence title={fmt(w.title, { name: user.name.split(' ')[0] })} subtitle={w.subtitle} steps={w.steps} skip={w.skip} href={`/portal`} />;
 }

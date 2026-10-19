@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
-import { isLocale, type Locale } from './i18n';
+import { LANG_COOKIE, isLocale, type Locale } from './i18n';
 import {
   addMessage,
   createClient,
@@ -45,12 +45,19 @@ const loc = (f: FormData): Locale => {
   const l = str(f, 'locale', 10);
   return isLocale(l) ? l : 'fr-be';
 };
-const portalPath = (l: Locale, p = '') => `/${l}/portal${p}`;
-const refreshPortal = (l: Locale) => revalidatePath(portalPath(l), 'layout');
+/** The portal and the admin are app screens: no language prefix in their URLs (see middleware). */
+const portalPath = (p = '') => `/portal${p}`;
+const refreshPortal = () => revalidatePath('/[locale]/portal', 'layout');
+const refreshAdmin = () => {
+  revalidatePath('/[locale]/admin', 'layout');
+  refreshPortal();
+};
+/** Remembers the language the user signed in with, so /portal renders in it. */
+const rememberLang = async (l: Locale) => (await cookies()).set(LANG_COOKIE, l, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Vercel functions accept request bodies up to 4.5 MB; keep each file under that. */
 const MAX_FILE = 4 * 1024 * 1024;
-const landing = (u: User, l: Locale) => (u.role === 'staff' ? `/${l}/admin` : portalPath(l, '/welcome'));
+const landing = (u: User) => (u.role === 'staff' ? '/admin' : portalPath('/welcome'));
 
 /* ---------- public ---------- */
 
@@ -74,7 +81,8 @@ export async function register(_: FormState, f: FormData): Promise<FormState> {
   if (await findUserByEmail(email)) return { error: 'exists' };
   const user = await createUser({ email, name: str(f, 'name', 120), company: str(f, 'company', 160), passwordHash: await bcrypt.hash(password, 10) });
   await createSession(user.id);
-  redirect(portalPath(loc(f), '/welcome'));
+  await rememberLang(loc(f));
+  redirect(portalPath('/welcome'));
 }
 
 export async function login(_: FormState, f: FormData): Promise<FormState> {
@@ -84,7 +92,8 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
   const user = await findUserByEmail(email);
   if (!user || !(await bcrypt.compare(String(f.get('password') ?? ''), user.passwordHash))) return { error: 'invalid' };
   await createSession(user.id);
-  redirect(landing(user, loc(f)));
+  await rememberLang(loc(f));
+  redirect(landing(user));
 }
 
 /** Demo is on unless DEMO_ENABLED=false (turn it off before launch). */
@@ -105,7 +114,8 @@ export async function loginDemo(_: FormState, f: FormData): Promise<FormState> {
   if (!user) return { error: 'invalid' };
   await createSession(user.id);
   (await cookies()).delete(CLIENT_COOKIE);
-  redirect(landing(user, l));
+  await rememberLang(l);
+  redirect(landing(user));
 }
 
 export async function logout(f: FormData) {
@@ -149,7 +159,7 @@ export async function uploadDossier(_: FormState, f: FormData): Promise<FormStat
     type: f.get('type') === 'document' ? 'document' : 'dossier',
     files,
   });
-  refreshPortal(loc(f));
+  refreshPortal();
   return { ok: true };
 }
 
@@ -162,7 +172,7 @@ export async function sendMessage(_: FormState, f: FormData): Promise<FormState>
   const files = (await saveFiles(user.id, `msg-${newId()}`, f)) ?? [];
   const dossierId = str(f, 'dossierId', 80) || undefined;
   await addMessage({ userId: user.id, clientId, author: 'client', authorName: user.name, body, dossierId, files });
-  refreshPortal(loc(f));
+  refreshPortal();
   return { ok: true };
 }
 
@@ -174,14 +184,14 @@ export async function respondToRequest(_: FormState, f: FormData): Promise<FormS
   const note = str(f, 'note', 2000);
   if (!files.length && !note) return { error: 'invalid' };
   await answerRequest(user.id, id, note, files);
-  refreshPortal(loc(f));
+  refreshPortal();
   return { ok: true };
 }
 
-export async function markAllRead(f: FormData) {
+export async function markAllRead() {
   const user = await requireUser();
   await markNotificationsRead(user.id);
-  refreshPortal(loc(f));
+  refreshPortal();
 }
 
 export async function updateProfile(_: FormState, f: FormData): Promise<FormState> {
@@ -193,7 +203,7 @@ export async function updateProfile(_: FormState, f: FormData): Promise<FormStat
     vatNumber: str(f, 'vatNumber', 40),
     software: str(f, 'software', 60),
   });
-  refreshPortal(loc(f));
+  refreshPortal();
   return { ok: true };
 }
 
@@ -205,7 +215,7 @@ export async function selectClient(f: FormData) {
   const owned = id === 'all' ? 'all' : await ownedClientId(user, id);
   if (owned && (id === 'all' || owned === id)) jar.set(CLIENT_COOKIE, owned, { httpOnly: true, sameSite: 'lax', path: '/', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 90 });
   const back = str(f, 'back', 300);
-  redirect(back.startsWith(`/${loc(f)}/portal`) ? back : portalPath(loc(f)));
+  redirect(back.startsWith('/portal') ? back : portalPath());
 }
 
 export async function addClient(_: FormState, f: FormData): Promise<FormState> {
@@ -215,7 +225,7 @@ export async function addClient(_: FormState, f: FormData): Promise<FormState> {
   const c = await createClient({ userId: user.id, name, vatNumber: str(f, 'vatNumber', 40), software: str(f, 'software', 60), sector: str(f, 'sector', 60) });
   (await cookies()).set(CLIENT_COOKIE, c.id, { httpOnly: true, sameSite: 'lax', path: '/', secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 24 * 90 });
   // Land on the new client's overview, ready to upload its first documents.
-  redirect(portalPath(loc(f)));
+  redirect(portalPath());
 }
 
 /* ---------- back-office (Delegis staff) ---------- */
@@ -225,16 +235,13 @@ async function requireStaff() {
   if (user.role !== 'staff') throw new Error('Forbidden');
   return user;
 }
-const refreshStaff = (l: Locale) => {
-  revalidatePath(`/${l}/admin`, 'layout');
-  revalidatePath(portalPath(l), 'layout');
-};
+const refreshStaff = () => refreshAdmin();
 
 /** Moves a dossier to its next processing step (encoding → review → delivered). */
 export async function staffAdvance(f: FormData) {
   const staff = await requireStaff();
   await advanceDossier(str(f, 'dossierId', 80), staff.name);
-  refreshStaff(loc(f));
+  refreshStaff();
 }
 
 /** Replies to a client conversation as the signed-in staff member. */
@@ -245,7 +252,7 @@ export async function staffReply(_: FormState, f: FormData): Promise<FormState> 
   if (!target || !body) return { error: 'invalid' };
   const files = (await saveFiles(target.client.userId, `msg-${newId()}`, f)) ?? [];
   await addMessage({ userId: target.client.userId, clientId: target.client.id, author: 'team', authorName: staff.name, body, dossierId: str(f, 'dossierId', 80) || undefined, files });
-  refreshStaff(loc(f));
+  refreshStaff();
   return { ok: true };
 }
 
@@ -257,7 +264,7 @@ export async function staffRequest(_: FormState, f: FormData): Promise<FormState
   if (!d || !title) return { error: 'invalid' };
   const days = Math.min(30, Math.max(1, Number(str(f, 'days', 3)) || 5));
   await createRequest({ userId: d.userId, clientId: d.clientId, dossierId: d.id, title, detail: str(f, 'detail', 1000), dueAt: new Date(Date.now() + days * 864e5).toISOString() });
-  refreshStaff(loc(f));
+  refreshStaff();
   return { ok: true };
 }
 
@@ -270,7 +277,7 @@ export async function staffDeliver(_: FormState, f: FormData): Promise<FormState
   if (!d || !(file instanceof File) || !file.size || file.size > MAX_FILE || !['report', 'vat', 'ledger', 'peppol'].includes(kind)) return { error: 'invalid' };
   const stored = await putFile(`${d.userId}/deliverables/${file.name}`, Buffer.from(await file.arrayBuffer()), file.type || 'application/octet-stream');
   await createDeliverable({ userId: d.userId, clientId: d.clientId, title: str(f, 'title', 160) || file.name, kind, period: d.period, fileName: file.name, stored, size: file.size });
-  refreshStaff(loc(f));
+  refreshStaff();
   return { ok: true };
 }
 
@@ -299,30 +306,26 @@ export async function saveAccess(_: FormState, f: FormData): Promise<FormState> 
     if (!clientId || !label) return { error: 'invalid' };
     await createAccess(user.id, clientId, { ...input, label, kind: kindOf(f) }, user.name);
   }
-  refreshPortal(loc(f));
-  revalidatePath(`/${loc(f)}/admin`, 'layout');
+  refreshPortal();
+  revalidatePath('/[locale]/admin', 'layout');
   return { ok: true };
 }
 
 export async function withdrawAccess(f: FormData) {
   const user = await requireUser();
   await revokeAccess(user.id, str(f, 'accessId', 80), user.name);
-  refreshPortal(loc(f));
+  refreshPortal();
 }
 
 /* ---------- admin: accesses, firms, team ---------- */
 
-const refreshAdmin = (l: Locale) => {
-  revalidatePath(`/${l}/admin`, 'layout');
-  revalidatePath(portalPath(l), 'layout');
-};
 
 /** Asks a firm for an access to one of its clients' tools. */
 export async function adminRequestAccess(_: FormState, f: FormData): Promise<FormState> {
   const staff = await requireStaff();
   const label = str(f, 'label', 120);
   if (!label || !(await requestAccess(str(f, 'clientId', 80), { label, kind: kindOf(f), note: str(f, 'note', 1000) }, staff.name))) return { error: 'invalid' };
-  refreshAdmin(loc(f));
+  refreshAdmin();
   return { ok: true };
 }
 
@@ -337,7 +340,7 @@ export async function adminAssignManager(f: FormData) {
   const managerId = str(f, 'managerId', 80);
   const m = managerId ? await findUser(managerId) : undefined;
   await assignManager(str(f, 'firmId', 80), m?.role === 'staff' ? m.id : null);
-  refreshAdmin(loc(f));
+  refreshAdmin();
 }
 
 /** Opens an account for a new accounting firm (the firm then signs in with this e-mail and password). */
@@ -358,7 +361,7 @@ export async function adminCreateFirm(_: FormState, f: FormData): Promise<FormSt
     managerId: managerId && (await findUser(managerId))?.role === 'staff' ? managerId : undefined,
     passwordHash: await bcrypt.hash(password, 10),
   });
-  redirect(`/${loc(f)}/admin/cabinets/${firm.id}`);
+  redirect(`/admin/cabinets/${firm.id}`);
 }
 
 export async function adminUpdateFirm(_: FormState, f: FormData): Promise<FormState> {
@@ -367,7 +370,7 @@ export async function adminUpdateFirm(_: FormState, f: FormData): Promise<FormSt
   const name = str(f, 'name', 120);
   if (!company || !name) return { error: 'invalid' };
   await updateFirm(str(f, 'firmId', 80), { company, name, phone: str(f, 'phone', 40), vatNumber: str(f, 'vatNumber', 40) });
-  refreshAdmin(loc(f));
+  refreshAdmin();
   return { ok: true };
 }
 
@@ -378,7 +381,7 @@ export async function adminAddClient(_: FormState, f: FormData): Promise<FormSta
   const name = str(f, 'name', 160);
   if (!firm || firm.role !== 'client' || !name) return { error: 'invalid' };
   await createClient({ userId: firm.id, name, vatNumber: str(f, 'vatNumber', 40), software: str(f, 'software', 60), sector: str(f, 'sector', 60) });
-  refreshAdmin(loc(f));
+  refreshAdmin();
   return { ok: true };
 }
 
@@ -390,7 +393,7 @@ export async function adminCreateStaff(_: FormState, f: FormData): Promise<FormS
   if (!EMAIL_RE.test(email) || password.length < 8 || !str(f, 'name')) return { error: 'invalid' };
   if (await findUserByEmail(email)) return { error: 'exists' };
   await createUser({ email, name: str(f, 'name', 120), company: 'Delegis', role: 'staff', title: str(f, 'title', 80), city: str(f, 'city', 60), phone: str(f, 'phone', 40), passwordHash: await bcrypt.hash(password, 10) });
-  refreshAdmin(loc(f));
+  refreshAdmin();
   return { ok: true };
 }
 
@@ -399,6 +402,6 @@ export async function adminUpdateStaff(_: FormState, f: FormData): Promise<FormS
   const name = str(f, 'name', 120);
   if (!name) return { error: 'invalid' };
   await updateStaffProfile(str(f, 'staffId', 80), { name, title: str(f, 'title', 80), city: str(f, 'city', 60), phone: str(f, 'phone', 40) });
-  refreshAdmin(loc(f));
+  refreshAdmin();
   return { ok: true };
 }

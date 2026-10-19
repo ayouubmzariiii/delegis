@@ -18,7 +18,7 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
   const a = getApp(locale);
   const openByClient = Object.fromEntries(account.clients.map((c) => [c.id, account.requests.filter((r) => r.clientId === c.id && r.status === 'open').length]));
   const clientName = (id: string) => account.clients.find((c) => c.id === id)?.name;
-  const base = `/${locale}/portal`;
+  const base = `/portal`;
   const unread = ws.notifications.filter((n) => !n.read);
   const openRequests = ws.requests.filter((r) => r.status === 'open').length;
   const pendingAccess = ws.accesses.filter((x) => x.status === 'requested').length;

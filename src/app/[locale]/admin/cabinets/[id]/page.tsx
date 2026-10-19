@@ -18,7 +18,7 @@ export default async function FirmPage({ params }: { params: Promise<{ locale: s
   const firm = await findUser(id);
   if (!firm || firm.role !== 'client') notFound();
   const [ws, team, accesses] = await Promise.all([getWorkspace(firm.id), listTeam(), allAccesses(firm.id)]);
-  const base = `/${locale}/admin`;
+  const base = `/admin`;
   const manager = team.find((m) => m.id === firm.managerId);
 
   return (
