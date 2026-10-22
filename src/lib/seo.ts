@@ -59,7 +59,8 @@ export function organizationLd(locale: Locale) {
         email: site.email,
         description: 'Back-office comptable externalisé pour entreprises et fiduciaires en Belgique et au Maroc.',
         foundingLocation: { '@type': 'Place', name: 'Bruxelles, Belgique' },
-        contactPoint: site.offices.map((o) => ({ '@type': 'ContactPoint', contactType: 'sales', telephone: o.phone, email: site.email, areaServed: o.country, availableLanguage: o.country === 'BE' ? ['fr', 'nl', 'en'] : ['fr', 'ar', 'en'] })),
+        telephone: site.phoneE164,
+        contactPoint: [{ '@type': 'ContactPoint', contactType: 'sales', telephone: site.phoneE164, email: site.email, areaServed: site.offices.map((o) => o.country), availableLanguage: ['fr', 'nl', 'en', 'ar'] }],
         sameAs: [site.social.linkedin],
         areaServed: [
           { '@type': 'Country', name: 'Belgium' },
@@ -74,11 +75,12 @@ export function organizationLd(locale: Locale) {
         parentOrganization: { '@id': `${site.url}/#org` },
         url: absUrl(locale, ''),
         image: `${site.url}/og.png`,
-        telephone: o.phone,
+        telephone: site.phoneE164,
         email: site.email,
         priceRange: '€€',
-        address: { '@type': 'PostalAddress', streetAddress: o.street, postalCode: o.postalCode, addressLocality: o.city, addressCountry: o.country },
-        geo: { '@type': 'GeoCoordinates', latitude: o.lat, longitude: o.lng },
+        // City level only: the team works remotely, so there is no street address or map pin.
+        address: { '@type': 'PostalAddress', addressLocality: o.city, addressCountry: o.country },
+        areaServed: { '@type': 'Country', name: o.country },
         openingHoursSpecification: [
           {
             '@type': 'OpeningHoursSpecification',

@@ -622,7 +622,7 @@ const en: Dict = {
     send: 'Send request',
     sent: 'Thank you! Your request has been sent. We will reply within 24 working hours.',
     error: 'Something went wrong. Please write to us directly at hello@delegis.be.',
-    officesTitle: 'Our offices',
+    officesTitle: 'Where we are',
   },
   privacy: {
     metaTitle: 'Data Security & GDPR | Delegis',

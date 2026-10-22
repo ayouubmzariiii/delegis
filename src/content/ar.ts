@@ -622,7 +622,7 @@ const ar: Dict = {
     send: 'إرسال الطلب',
     sent: 'شكرًا! تم إرسال طلبكم بنجاح. سنرد عليكم خلال 24 ساعة عمل.',
     error: 'حدث خطأ. راسلونا مباشرة على hello@delegis.be.',
-    officesTitle: 'مكاتبنا',
+    officesTitle: 'أين نحن',
   },
   privacy: {
     metaTitle: 'أمن البيانات وRGPD | Delegis',

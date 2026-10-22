@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { addMessage, createAccess, requestAccess, createClient, createDeliverable, createDossier, createInvoice, createRequest, createUser, deleteUserByEmail, findUserByEmail } from './db';
 import { q } from './sql';
 import { putFile } from './storage';
+import { site } from './site';
 import { coda, csv, invoicePdf, reportPdf, ublInvoice } from './docgen';
 import { DEMO_CLIENTS, DEMO_EMAIL, DEMO_USER, TEAM, buildDemoWorkspace } from './demo';
 import type { StoredFile } from './types';
@@ -9,8 +10,8 @@ import fr from '@/content/demo-fr';
 
 /** Delegis staff accounts used by the back-office (fictional people). */
 export const STAFF = [
-  { email: 'thomas.lambert@delegis.test', name: TEAM.manager.name, title: 'Responsable de compte', city: 'Bruxelles', phone: '+32 2 588 14 20' },
-  { email: 'yasmine.elidrissi@delegis.test', name: TEAM.specialist.name, title: 'Comptable senior · Encodage & TVA', city: 'Casablanca', phone: '+212 522 48 71 30' },
+  { email: 'thomas.lambert@delegis.test', name: TEAM.manager.name, title: 'Responsable de compte', city: 'Bruxelles', phone: site.phone },
+  { email: 'yasmine.elidrissi@delegis.test', name: TEAM.specialist.name, title: 'Comptable senior · Encodage & TVA', city: 'Casablanca', phone: site.phone },
 ] as const;
 
 const SUPPLIERS = ['Brico Matériaux SA', 'Total Energies Belgium', 'Würth Belgium', 'Proximus SA', 'Engie Electrabel', 'Bol.com BV', 'Makro Cash & Carry', 'Securex ASBL'];

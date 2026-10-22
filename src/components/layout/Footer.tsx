@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { localeMeta, type Locale } from '@/lib/i18n';
 import { href, paths } from '@/lib/routes';
-import { site } from '@/lib/site';
+import { site, officeLabel, telHref } from '@/lib/site';
 import { getDict } from '@/content';
 import { getExtra } from '@/content/extra';
 import { getHook } from '@/content/hook';
@@ -53,17 +53,19 @@ export function Footer({ locale }: { locale: Locale }) {
             <Logo inverse />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">{t.footer.tagline}</p>
             <div className="mt-8 space-y-4 text-sm text-white/60">
-              {site.offices.map((o) => (
-                <address key={o.id} className="not-italic">
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-mark">{o.city}</span>
-                  <br />
-                  {o.street}, {o.postalCode} {o.city}
-                  <br />
-                  <a href={`tel:${o.phone.replace(/\s/g, '')}`} className="hover:text-white" dir="ltr">
-                    {o.phone}
-                  </a>
-                </address>
-              ))}
+              <address className="not-italic">
+                {site.offices.map((o) => {
+                  const { city, country } = officeLabel(o, localeMeta[locale].lang);
+                  return (
+                    <span key={o.id} className="block">
+                      <span className="font-mono text-[11px] uppercase tracking-wider text-mark">{city}</span>, {country}
+                    </span>
+                  );
+                })}
+                <a href={telHref(site.phone)} className="mt-2 inline-block hover:text-white" dir="ltr">
+                  {site.phone}
+                </a>
+              </address>
             </div>
           </div>
           {columns.map((c, i) => (
@@ -89,7 +91,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <div className="flex gap-6">
             <Link href={href(locale, paths.privacy())} className="hover:text-white">{t.privacy.h1}</Link>
             <a href={`mailto:${site.email}`} className="hover:text-white">{site.email}</a>
-            <span dir="ltr">{site.vat}</span>
+            {site.vat && <span dir="ltr">{site.vat}</span>}
           </div>
         </div>
       </Container>

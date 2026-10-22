@@ -622,7 +622,7 @@ const fr: Dict = {
     send: 'Envoyer la demande',
     sent: 'Merci ! Votre demande est bien envoyée. Nous vous répondons sous 24 h ouvrables.',
     error: 'Une erreur est survenue. Écrivez-nous directement à hello@delegis.be.',
-    officesTitle: 'Nos bureaux',
+    officesTitle: 'Où nous trouver',
   },
   privacy: {
     metaTitle: 'Sécurité des données et RGPD | Delegis',

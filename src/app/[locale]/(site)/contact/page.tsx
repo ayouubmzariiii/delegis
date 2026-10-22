@@ -5,7 +5,8 @@ import { resolveLocale, type LocaleParams } from '@/lib/params';
 import { buildMetadata } from '@/lib/seo';
 import { paths } from '@/lib/routes';
 import { crumbs } from '@/lib/crumbs';
-import { site } from '@/lib/site';
+import { site, officeLabel, telHref } from '@/lib/site';
+import { localeMeta } from '@/lib/i18n';
 import { getDict } from '@/content';
 import { getHook } from '@/content/hook';
 import { PageHeader } from '@/components/sections/PageHeader';
@@ -48,15 +49,18 @@ export default async function ContactPage({ params }: LocaleParams) {
             </ul>
             <div className="border-t border-line pt-6">
               <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-500">{t.contact.officesTitle}</p>
-              {site.offices.map((o) => (
-                <address key={o.id} className="mt-4 not-italic">
-                  <span className="font-medium">{o.city}</span>
-                  <br />
-                  <span className="text-sm text-ink-600">{o.street}, {o.postalCode}</span>
-                  <br />
-                  <a href={`tel:${o.phone.replace(/\s/g, '')}`} className="text-sm underline-offset-4 hover:underline" dir="ltr">{o.phone}</a>
-                </address>
-              ))}
+              <address className="mt-4 not-italic">
+                {site.offices.map((o) => {
+                  const { city, country } = officeLabel(o, localeMeta[locale].lang);
+                  return (
+                    <span key={o.id} className="block">
+                      <span className="font-medium">{city}</span>
+                      <span className="text-sm text-ink-600">, {country}</span>
+                    </span>
+                  );
+                })}
+                <a href={telHref(site.phone)} className="mt-4 block text-sm underline-offset-4 hover:underline" dir="ltr">{site.phone}</a>
+              </address>
               <a href={`mailto:${site.email}`} className="mt-4 block text-sm font-medium underline underline-offset-4">{site.email}</a>
             </div>
           </aside>

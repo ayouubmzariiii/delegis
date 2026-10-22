@@ -622,7 +622,7 @@ const nl: Dict = {
     send: 'Aanvraag versturen',
     sent: 'Bedankt! Uw aanvraag is goed verzonden. Wij antwoorden binnen 24 werkuren.',
     error: 'Er is een fout opgetreden. Schrijf ons rechtstreeks via hello@delegis.be.',
-    officesTitle: 'Onze kantoren',
+    officesTitle: 'Waar we zijn',
   },
   privacy: {
     metaTitle: 'Gegevensbeveiliging en GDPR | Delegis',

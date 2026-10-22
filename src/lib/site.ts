@@ -1,30 +1,33 @@
+import type { Lang } from './i18n';
+import { cities } from '@/content/cities';
+
+/** Turns a displayed phone number into its E.164 form for tel: links and structured data. */
+export const toE164 = (phone: string) => phone.replace(/[^\d+]/g, '');
+export const telHref = (phone: string) => `tel:${toE164(phone)}`;
+
+const phone = '+212 684199400';
+
 export const site = {
   name: 'Delegis',
   url: (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) || 'https://www.delegis.be').replace(/\/$/, ''),
   email: 'hello@delegis.be',
-  // Placeholders: replace with the real registered offices before going live.
+  phone,
+  phoneE164: toE164(phone),
+  // The team works remotely: locations stay at city level, with no street address or coordinates.
   offices: [
-    {
-      id: 'brussels',
-      city: 'Bruxelles',
-      street: 'Avenue Louise 000',
-      postalCode: '1050',
-      country: 'BE',
-      phone: '+32 2 000 00 00',
-      lat: 50.8263,
-      lng: 4.3626,
-    },
-    {
-      id: 'casablanca',
-      city: 'Casablanca',
-      street: 'Boulevard d’Anfa 000',
-      postalCode: '20000',
-      country: 'MA',
-      phone: '+212 5 22 00 00 00',
-      lat: 33.5883,
-      lng: -7.6114,
-    },
+    { id: 'brussels', city: 'Bruxelles', country: 'BE' },
+    { id: 'casablanca', city: 'Casablanca', country: 'MA' },
   ],
-  vat: 'BE 0000.000.000',
+  // Set once the company number is registered; nothing is shown until then.
+  vat: undefined as string | undefined,
   social: { linkedin: 'https://www.linkedin.com/company/delegis' },
 };
+
+export type Office = (typeof site.offices)[number];
+
+/** City and country names in the page's language, e.g. "Casablanca" and "Morocco". */
+export function officeLabel(o: Office, lang: Lang) {
+  const city = cities.find((c) => c.id === o.id)?.name[lang] ?? o.city;
+  const country = new Intl.DisplayNames([lang], { type: 'region' }).of(o.country) ?? o.country;
+  return { city, country };
+}

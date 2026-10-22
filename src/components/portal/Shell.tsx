@@ -10,6 +10,7 @@ import { Icon } from '@/components/ui/Icon';
 import { buttonClass } from '@/components/ui/primitives';
 import { SideNav, type NavItem } from './SideNav';
 import { Avatar } from './ui';
+import { telHref } from '@/lib/site';
 
 const kindIcon = { message: 'chat', request: 'inbox', status: 'folder', document: 'download', invoice: 'receipt' } as const;
 
@@ -66,7 +67,7 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
             <div className="mt-2 space-y-0.5 text-[11px]">
               <a href={`mailto:${manager.email}`} className="block truncate text-ink-600 hover:text-go-700">{manager.email}</a>
               {manager.phone && (
-                <a href={`tel:${manager.phone.replace(/s/g, '')}`} dir="ltr" className="block text-ink-600 hover:text-go-700">{manager.phone}</a>
+                <a href={telHref(manager.phone)} dir="ltr" className="block text-ink-600 hover:text-go-700">{manager.phone}</a>
               )}
             </div>
           </>

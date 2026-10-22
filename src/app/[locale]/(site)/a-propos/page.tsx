@@ -5,7 +5,7 @@ import { resolveLocale, type LocaleParams } from '@/lib/params';
 import { buildMetadata } from '@/lib/seo';
 import { paths } from '@/lib/routes';
 import { crumbs } from '@/lib/crumbs';
-import { site } from '@/lib/site';
+import { site, officeLabel } from '@/lib/site';
 import { getDict } from '@/content';
 import { PageHeader } from '@/components/sections/PageHeader';
 import { Section, Heading } from '@/components/ui/primitives';
@@ -34,13 +34,16 @@ export default async function AboutPage({ params }: LocaleParams) {
           </div>
         </div>
         <div className="mt-20 grid gap-4 sm:grid-cols-2" dir="ltr">
-          {site.offices.map((o, i) => (
-            <div key={o.id} className={`rounded-[1.75rem] p-8 ${i === 0 ? 'bg-ink text-white' : 'bg-mark text-ink'}`}>
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] opacity-60">{o.country}</p>
-              <p className="mt-6 text-display-md font-semibold">{o.city}</p>
-              <p className="mt-2 text-sm opacity-75">{o.street}, {o.postalCode}</p>
-            </div>
-          ))}
+          {site.offices.map((o, i) => {
+            const { city, country } = officeLabel(o, localeMeta[locale].lang);
+            return (
+              <div key={o.id} className={`rounded-[1.75rem] p-8 ${i === 0 ? 'bg-ink text-white' : 'bg-mark text-ink'}`}>
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] opacity-60">{o.country}</p>
+                <p className="mt-6 text-display-md font-semibold">{city}</p>
+                <p className="mt-2 text-sm opacity-75">{country}</p>
+              </div>
+            );
+          })}
         </div>
       </Section>
       <Section className="border-t border-line">
