@@ -5,6 +5,8 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* Decorative shapes bleed past the edge on phones; never let them cause sideways scrolling. */
+    overflow-x: clip;
     scroll-behavior: smooth;
   }
   body {

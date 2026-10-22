@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { locales, localeMeta, defaultLocale, type Locale } from './i18n';
 import { site } from './site';
+import { ogKey } from './pages';
 
 /** Returns the localized path WITHOUT the locale prefix ('' for the home page). */
 export type PathFor = (l: Locale) => string;
@@ -24,6 +25,7 @@ export function buildMetadata({
   for (const l of locales) languages[localeMeta[l].hreflang] = absUrl(l, pathFor(l));
   languages['x-default'] = absUrl(defaultLocale, pathFor(defaultLocale));
   const url = absUrl(locale, pathFor(locale));
+  const image = { url: `${site.url}/og/${locale}/${ogKey(pathFor(locale))}.png`, width: 1200, height: 630, alt: title, type: 'image/png' };
   return {
     title: { absolute: title },
     description,
@@ -36,9 +38,9 @@ export function buildMetadata({
       siteName: site.name,
       locale: localeMeta[locale].ogLocale,
       alternateLocale: locales.filter((l) => l !== locale).map((l) => localeMeta[l].ogLocale),
-      images: [{ url: `${site.url}/og.png`, width: 1200, height: 630, alt: site.name }],
+      images: [image],
     },
-    twitter: { card: 'summary_large_image', title, description, images: [`${site.url}/og.png`] },
+    twitter: { card: 'summary_large_image', title, description, images: [image] },
     robots: noindex
       ? { index: false, follow: false }
       : { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },

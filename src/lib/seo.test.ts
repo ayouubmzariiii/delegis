@@ -1,32 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { locales, localeMeta, type Locale } from './i18n';
-import { getDict } from '@/content';
-import { getExtra } from '@/content/extra';
-import { cities } from '@/content/cities';
-import { cityDescription } from '@/content/city-local';
+import { locales } from './i18n';
+import { allPages } from './routes';
+import { ogKey, sitePages } from './pages';
+import { buildMetadata } from './seo';
 
-/** Every indexable page's [title, description] for a locale. */
-function metas(l: Locale): [string, string, string][] {
-  const t = getDict(l);
-  const x = getExtra(l);
-  const lang = localeMeta[l].lang;
-  const fill = (s: string, c: string) => s.replaceAll('{city}', c);
-  return [
-    ['home', t.home.metaTitle, t.home.metaDescription],
-    ['services', t.servicesPage.metaTitle, t.servicesPage.metaDescription],
-    ['pricing', t.pricing.metaTitle, t.pricing.metaDescription],
-    ['about', t.about.metaTitle, t.about.metaDescription],
-    ['contact', t.contact.metaTitle, t.contact.metaDescription],
-    ['privacy', t.privacy.metaTitle, t.privacy.metaDescription],
-    ['firms', x.firms.metaTitle, x.firms.metaDescription],
-    ['method', x.method.metaTitle, x.method.metaDescription],
-    ['careers', x.careers.metaTitle, x.careers.metaDescription],
-    ['guides', x.guides.metaTitle, x.guides.metaDescription],
-    ...t.services.map((s) => [`service:${s.id}`, s.metaTitle, s.metaDescription] as [string, string, string]),
-    ...x.guides.articles.map((a) => [`guide:${a.id}`, a.metaTitle, a.metaDescription] as [string, string, string]),
-    ...cities.map((c) => [`city:${c.id}`, fill(t.cities.metaTitle, c.name[lang]), cityDescription(l, c.id, c.name[lang])] as [string, string, string]),
-  ];
-}
+/** Every indexable page's [id, title, description] for a locale. */
+const metas = (l: (typeof locales)[number]): [string, string, string][] =>
+  sitePages(l)
+    .filter((p) => p.indexable)
+    .map((p) => [p.id, p.title, p.description]);
 
 describe('SEO metadata', () => {
   for (const l of locales) {
@@ -58,5 +40,22 @@ describe('SEO metadata', () => {
         .map((g) => g!.map((r) => r.key).join(' = '));
     expect(dupes('title')).toEqual([]);
     expect(dupes('d')).toEqual([]);
+  });
+
+  it('lists exactly the pages in the sitemap', () => {
+    for (const l of locales) {
+      expect(sitePages(l).filter((p) => p.indexable).map((p) => p.path).sort()).toEqual(allPages().map((fn) => fn(l)).sort());
+    }
+  });
+
+  it('gives every page its own share image', () => {
+    for (const l of locales) {
+      const pages = sitePages(l);
+      expect(new Set(pages.map((p) => ogKey(p.path))).size).toBe(pages.length);
+      for (const p of pages) {
+        const og = buildMetadata({ locale: l, pathFor: () => p.path, title: p.title, description: p.description }).openGraph!;
+        expect(og.images).toEqual([expect.objectContaining({ url: expect.stringMatching(new RegExp(`/og/${l}/${ogKey(p.path).replace(/[~.]/g, '\\$&')}\\.png$`)), width: 1200, height: 630 })]);
+      }
+    }
   });
 });
