@@ -4,11 +4,21 @@ import fr from './extra-fr';
 import nl from './extra-nl';
 import en from './extra-en';
 import ar from './extra-ar';
+import { frMaArticles, frMaPages } from './fr-ma';
 
 const extras: Record<Lang, Extra> = { fr, nl, en, ar };
 
+// French pages for Morocco share the fr copy, with their own search snippets (see fr-ma.ts).
+const frMa: Extra = {
+  ...fr,
+  firms: { ...fr.firms, ...frMaPages.firms },
+  method: { ...fr.method, ...frMaPages.method },
+  careers: { ...fr.careers, ...frMaPages.careers },
+  guides: { ...fr.guides, ...frMaPages.guides, articles: fr.guides.articles.map((a) => ({ ...a, ...frMaArticles[a.id] })) },
+};
+
 export function getExtra(locale: Locale): Extra {
-  return extras[localeMeta[locale].lang];
+  return locale === 'fr-ma' ? frMa : extras[localeMeta[locale].lang];
 }
 
 export function getArticle(locale: Locale, slug: string) {

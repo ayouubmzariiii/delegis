@@ -20,6 +20,8 @@ export const site = {
   ],
   // Set once the company number is registered; nothing is shown until then.
   vat: undefined as string | undefined,
+  // Date of the last real content change; feeds sitemap lastmod. Update it when copy changes.
+  contentUpdated: '2026-10-22',
   social: { linkedin: 'https://www.linkedin.com/company/delegis' },
 };
 

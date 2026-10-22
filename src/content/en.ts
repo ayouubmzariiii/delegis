@@ -61,7 +61,7 @@ const en: Dict = {
     estimatorText: 'Move the sliders to get a real-time monthly estimate.',
     bridgeTitle: 'Brussels ↔ Casablanca, one single office',
     bridgeText:
-      'Our Moroccan teams are trained in Belgian accounting law and VAT. You speak to an account manager in Belgium; production takes place in a secure centre in Morocco, just one hour’s time difference away.',
+      'Our Moroccan teams are trained in Belgian accounting law and VAT. You speak to an account manager in Belgium; production is handled by our team in Morocco, just one hour’s time difference away.',
     faqTitle: 'Frequently asked questions',
     faq: [
       {
@@ -583,7 +583,7 @@ const en: Dict = {
       'Delegis supports SMEs, freelancers, international companies and accounting firms in {city} that want to outsource their bookkeeping and administrative tasks, without compromising on quality or proximity.',
     localTitle: 'A partner close to businesses in {city}',
     localText:
-      'Your account manager understands the realities of businesses in {city}: meetings by video call or on site, a single point of contact, a reply within 4 working hours. Your files are processed in our secure production centre, with a four-eyes check.',
+      'Your account manager understands the realities of businesses in {city}: meetings by video call or on site, a single point of contact, a reply within 4 working hours. Your files are processed by our production team on secure workstations, with a four-eyes check.',
     belgium: 'Belgium',
     morocco: 'Morocco',
   },
@@ -594,7 +594,7 @@ const en: Dict = {
     h1: 'Delegis, the back office that builds bridges',
     paragraphs: [
       'Delegis was born from a simple observation: companies and accounting firms in Belgium are short of hands for bookkeeping and admin, while Morocco trains thousands of talented French-speaking accountants every year.',
-      'We built a bridge between the two: management and client relations in Belgium, production in a secure centre in Casablanca, and working methods aligned with Belgian standards.',
+      'We built a bridge between the two: management and client relations in Belgium, production by a team based in Casablanca, and working methods aligned with Belgian standards.',
       'Our name comes from “delegate”: you hand us what slows you down, we handle it rigorously, and you keep the final say.',
     ],
     valuesTitle: 'Our commitments',
@@ -635,7 +635,7 @@ const en: Dict = {
       { title: 'Data processing agreement (DPA)', text: 'Every client signs a DPA compliant with Article 28 GDPR. Access from Morocco is governed by the European Commission’s standard contractual clauses.' },
       { title: 'Controlled access', text: 'Personal user accounts with two-factor authentication, least-privilege principle and logging of every action.' },
       { title: 'Committed staff', text: 'Every team member signs a confidentiality agreement and completes annual security training.' },
-      { title: 'Secure workstations', text: 'Work on managed workstations, with no USB sticks or printing, in a badge-access centre.' },
+      { title: 'Secure workstations', text: 'Work on managed workstations, with no USB sticks or printing.' },
       { title: 'Your rights', text: 'For any question or request to exercise your rights: privacy@delegis.be.' },
     ],
   },

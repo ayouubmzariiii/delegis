@@ -88,7 +88,7 @@ const fr: Extra = {
     ],
   },
   method: {
-    metaTitle: 'Notre méthode : démarrage, contrôle qualité, sécurité | Delegis',
+    metaTitle: 'Notre méthode : démarrage, qualité et sécurité | Delegis',
     metaDescription:
       'Comment se passe un démarrage chez Delegis, comment nous contrôlons chaque pièce et ce qui arrive à vos documents entre le dépôt et la livraison.',
     kicker: 'Méthode',

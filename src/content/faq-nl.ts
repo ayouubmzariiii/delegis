@@ -37,7 +37,7 @@ const nl: Faqs = {
   about: [
     {
       q: 'Waar zijn de teams van Delegis gevestigd?',
-      a: 'De aansturing en het klantencontact gebeuren vanuit Brussel. De productie gebeurt in een beveiligd centrum in Casablanca, dat slechts één uur tijdsverschil heeft met België.',
+      a: 'De aansturing en het klantencontact gebeuren vanuit Brussel. De productie gebeurt door ons team in Casablanca, dat slechts één uur tijdsverschil heeft met België.',
     },
     {
       q: 'Is Delegis een boekhoudkantoor?',

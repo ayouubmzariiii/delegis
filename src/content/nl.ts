@@ -61,7 +61,7 @@ const nl: Dict = {
     estimatorText: 'Verschuif de schuifregelaars en krijg meteen een maandelijkse prijsraming.',
     bridgeTitle: 'Brussel ↔ Casablanca, één kantoor',
     bridgeText:
-      'Onze Marokkaanse teams zijn opgeleid in het Belgische boekhoudrecht en de Belgische btw. U spreekt met een accountmanager in België; de productie gebeurt in een beveiligd centrum in Marokko, met slechts één uur tijdsverschil.',
+      'Onze Marokkaanse teams zijn opgeleid in het Belgische boekhoudrecht en de Belgische btw. U spreekt met een accountmanager in België; de productie gebeurt door ons team in Marokko, met slechts één uur tijdsverschil.',
     faqTitle: 'Veelgestelde vragen',
     faq: [
       {
@@ -583,7 +583,7 @@ const nl: Dict = {
       'Delegis ondersteunt kmo’s, zelfstandigen en boekhoudkantoren in {city} die hun boekhoudkundige encodage en administratieve taken willen uitbesteden, zonder in te boeten aan kwaliteit of nabijheid.',
     localTitle: 'Een partner dicht bij de bedrijven in {city}',
     localText:
-      'Uw accountmanager kent de realiteit van de bedrijven in {city}: afspraken via videoconferentie of ter plaatse, één aanspreekpunt, antwoord binnen 4 werkuren. Uw dossiers worden verwerkt in ons beveiligd productiecentrum, met dubbele controle.',
+      'Uw accountmanager kent de realiteit van de bedrijven in {city}: afspraken via videoconferentie of ter plaatse, één aanspreekpunt, antwoord binnen 4 werkuren. Uw dossiers worden verwerkt door ons productieteam op beveiligde werkposten, met dubbele controle.',
     belgium: 'België',
     morocco: 'Marokko',
   },
@@ -594,7 +594,7 @@ const nl: Dict = {
     h1: 'Delegis, de backoffice die bruggen bouwt',
     paragraphs: [
       'Delegis ontstond uit een eenvoudige vaststelling: Belgische bedrijven en boekhoudkantoren komen handen tekort voor encodage en administratie, terwijl Marokko elk jaar duizenden getalenteerde Franstalige boekhouders opleidt.',
-      'Wij bouwden een brug tussen beide: aansturing en klantrelatie in België, productie in een beveiligd centrum in Casablanca, en werkmethodes afgestemd op de Belgische normen.',
+      'Wij bouwden een brug tussen beide: aansturing en klantrelatie in België, productie door een team in Casablanca, en werkmethodes afgestemd op de Belgische normen.',
       'Onze naam komt van "delegeren": u vertrouwt ons toe wat u vertraagt, wij verwerken het nauwgezet, u behoudt de beslissing.',
     ],
     valuesTitle: 'Onze engagementen',
@@ -635,7 +635,7 @@ const nl: Dict = {
       { title: 'Verwerkersovereenkomst (DPA)', text: 'Elke klant ondertekent een DPA conform artikel 28 van de GDPR. Toegang vanuit Marokko is geregeld via de standaardcontractbepalingen van de Europese Commissie.' },
       { title: 'Gecontroleerde toegang', text: 'Persoonlijke toegang met tweestapsverificatie, het principe van minimale rechten en logging van elke actie.' },
       { title: 'Geëngageerde medewerkers', text: 'Elke medewerker ondertekent een geheimhoudingsovereenkomst en volgt jaarlijks een beveiligingsopleiding.' },
-      { title: 'Beveiligde werkposten', text: 'Werken op beheerde werkposten, zonder USB-sticks of printen, in een centrum met badgetoegang.' },
+      { title: 'Beveiligde werkposten', text: 'Werken op beheerde werkposten, zonder USB-sticks of printen.' },
       { title: 'Uw rechten', text: 'Voor elke vraag of om uw rechten uit te oefenen: privacy@delegis.be.' },
     ],
   },

@@ -61,7 +61,7 @@ const fr: Dict = {
     estimatorText: 'Bougez les curseurs : vous obtenez une estimation mensuelle en temps réel.',
     bridgeTitle: 'Bruxelles ↔ Casablanca, un seul bureau',
     bridgeText:
-      'Nos équipes marocaines sont formées au droit comptable et à la TVA belges. Vous parlez à un responsable de compte en Belgique ; la production se fait dans un centre sécurisé au Maroc, francophone et à une heure de décalage seulement.',
+      'Nos équipes marocaines sont formées au droit comptable et à la TVA belges. Vous parlez à un responsable de compte en Belgique ; la production est assurée par notre équipe au Maroc, francophone et à une heure de décalage seulement.',
     faqTitle: 'Questions fréquentes',
     faq: [
       {
@@ -89,7 +89,7 @@ const fr: Dict = {
     finalText: 'On l’encode à titre d’essai et on vous envoie le résultat avec un prix ferme. Vous décidez ensuite.',
   },
   servicesPage: {
-    metaTitle: 'Services de sous-traitance comptable & administrative | Delegis',
+    metaTitle: 'Sous-traitance comptable et administrative | Delegis',
     metaDescription:
       'Encodage, TVA, Peppol, rapprochement bancaire, pré-paie, saisie de données, service client : découvrez tous les services d’externalisation Delegis.',
     h1: 'Nos services de sous-traitance B2B',
@@ -583,7 +583,7 @@ const fr: Dict = {
       'Delegis accompagne les PME, indépendants et fiduciaires de {city} qui veulent externaliser leur encodage comptable et leurs tâches administratives, sans sacrifier la qualité ni la proximité.',
     localTitle: 'Un partenaire proche des entreprises de {city}',
     localText:
-      'Votre responsable de compte connaît les réalités des entreprises de {city} : rendez-vous en visioconférence ou sur place, interlocuteur unique, réponse sous 4 h ouvrables. Vos dossiers sont traités par notre centre de production sécurisé, avec double contrôle.',
+      'Votre responsable de compte connaît les réalités des entreprises de {city} : rendez-vous en visioconférence ou sur place, interlocuteur unique, réponse sous 4 h ouvrables. Vos dossiers sont traités par notre équipe de production sur des postes sécurisés, avec double contrôle.',
     belgium: 'Belgique',
     morocco: 'Maroc',
   },
@@ -594,7 +594,7 @@ const fr: Dict = {
     h1: 'Delegis, le back-office qui fait le pont',
     paragraphs: [
       'Delegis est né d’un constat simple : les entreprises et les fiduciaires belges manquent de bras pour l’encodage et l’administratif, alors que le Maroc forme chaque année des milliers de comptables francophones talentueux.',
-      'Nous avons construit un pont entre les deux : un pilotage et une relation client en Belgique, une production dans un centre sécurisé à Casablanca, et des méthodes de travail alignées sur les normes belges.',
+      'Nous avons construit un pont entre les deux : un pilotage et une relation client en Belgique, une production assurée par une équipe basée à Casablanca, et des méthodes de travail alignées sur les normes belges.',
       'Notre nom vient de « déléguer » : vous nous confiez ce qui vous ralentit, nous le traitons avec rigueur, vous gardez la décision.',
     ],
     valuesTitle: 'Nos engagements',
@@ -635,7 +635,7 @@ const fr: Dict = {
       { title: 'Contrat de sous-traitance (DPA)', text: 'Chaque client signe un DPA conforme à l’article 28 du RGPD. Les accès depuis le Maroc sont encadrés par les clauses contractuelles types de la Commission européenne.' },
       { title: 'Accès contrôlés', text: 'Accès nominatifs avec authentification à deux facteurs, principe du moindre privilège et journalisation de chaque action.' },
       { title: 'Collaborateurs engagés', text: 'Chaque collaborateur signe un accord de confidentialité et suit une formation annuelle à la sécurité.' },
-      { title: 'Postes sécurisés', text: 'Travail sur postes gérés, sans clé USB ni impression, dans un centre à accès badgé.' },
+      { title: 'Postes sécurisés', text: 'Travail sur postes gérés, sans clé USB ni impression.' },
       { title: 'Vos droits', text: 'Pour toute question ou demande d’exercice de vos droits : privacy@delegis.be.' },
     ],
   },

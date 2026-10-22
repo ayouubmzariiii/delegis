@@ -4,6 +4,7 @@ import fr from './fr';
 import nl from './nl';
 import en from './en';
 import ar from './ar';
+import { frMaPages, frMaServices } from './fr-ma';
 
 const dicts: Record<Lang, Dict> = { fr, nl, en, ar };
 
@@ -19,6 +20,13 @@ const frMa: Dict = {
     text:
       'Depuis Casablanca, Delegis prend en charge la saisie comptable, le back-office administratif et le service client des entreprises marocaines et belges. Vous déposez, nous traitons, vous validez.',
   },
+  servicesPage: { ...fr.servicesPage, ...frMaPages.services },
+  pricing: { ...fr.pricing, ...frMaPages.pricing },
+  about: { ...fr.about, ...frMaPages.about },
+  contact: { ...fr.contact, ...frMaPages.contact },
+  privacy: { ...fr.privacy, ...frMaPages.privacy },
+  cities: { ...fr.cities, ...frMaPages.cities },
+  services: fr.services.map((s) => ({ ...s, ...frMaServices[s.id] })),
 };
 
 export function getDict(locale: Locale): Dict {

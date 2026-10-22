@@ -10,6 +10,7 @@ import { crumbs } from '@/lib/crumbs';
 import { getDict } from '@/content';
 import { getUi } from '@/content/ui';
 import { cities, citiesForMarket } from '@/content/cities';
+import { cityDescription, cityLocal } from '@/content/city-local';
 import { PageHeader } from '@/components/sections/PageHeader';
 import { ServiceIndex } from '@/components/sections/ServiceIndex';
 import { Section, Heading, ButtonLink } from '@/components/ui/primitives';
@@ -36,7 +37,7 @@ const fill = (s: string, city: string) => s.replaceAll('{city}', city);
 export async function generateMetadata({ params }: P) {
   const { locale, c, name } = await load(params);
   const t = getDict(locale).cities;
-  return buildMetadata({ locale, pathFor: (l) => paths.city(l, c.id), title: fill(t.metaTitle, name), description: fill(t.metaDescription, name) });
+  return buildMetadata({ locale, pathFor: (l) => paths.city(l, c.id), title: fill(t.metaTitle, name), description: cityDescription(locale, c.id, name) });
 }
 
 export default async function CityPage({ params }: P) {
@@ -45,9 +46,10 @@ export default async function CityPage({ params }: P) {
   const t = getDict(locale);
   const ui = getUi(locale);
   const { lang, market } = localeMeta[locale];
+  const local = cityLocal[c.id][lang];
   return (
     <>
-      <JsonLd data={localServiceLd({ name: fill(t.cities.h1, name), description: fill(t.cities.metaDescription, name), url: absUrl(locale, paths.city(locale, c.id)), city: c.name.en, country: c.country === 'BE' ? 'Belgium' : 'Morocco' })} />
+      <JsonLd data={localServiceLd({ name: fill(t.cities.h1, name), description: cityDescription(locale, c.id, name), url: absUrl(locale, paths.city(locale, c.id)), city: c.name.en, country: c.country === 'BE' ? 'Belgium' : 'Morocco' })} />
       <PageHeader
         crumbs={crumbs(locale, [name, paths.city(locale, c.id)])}
         label={`${c.region} · ${c.country === 'BE' ? t.cities.belgium : t.cities.morocco}`}
@@ -63,6 +65,26 @@ export default async function CityPage({ params }: P) {
           <Heading index="01" label={name} title={fill(t.cities.localTitle, name)} lead={fill(t.cities.localText, name)} size="md" className="lg:col-span-5" />
           <div className="lg:col-span-7 lg:pt-10">
             <ServiceIndex locale={locale} services={t.services.slice(0, 6)} colService={ui.index.colService} colFrom={ui.index.colFrom} />
+          </div>
+        </div>
+      </Section>
+      <Section className="border-t border-line">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <Heading index="02" label={name} title={local.title} size="md" />
+            <div className="mt-6 space-y-5 text-lg leading-relaxed text-ink-700">
+              {local.paragraphs.map((p) => (
+                <p key={p.slice(0, 40)}>{p}</p>
+              ))}
+            </div>
+          </div>
+          <div className="lg:col-span-4 lg:col-start-9">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-500">{local.sectorsTitle}</h3>
+            <ul className="mt-5 space-y-3 border-t-2 border-go-600 pt-5">
+              {local.sectors.map((s) => (
+                <li key={s} className="border-b border-line pb-3 font-medium">{s}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </Section>

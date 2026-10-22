@@ -37,7 +37,7 @@ const en: Faqs = {
   about: [
     {
       q: 'Where are the Delegis teams based?',
-      a: 'Management and client relations are based in Brussels, while production takes place in a secure centre in Casablanca, just one hour behind Belgium.',
+      a: 'Management and client relations are based in Brussels, while production is handled by our team in Casablanca, just one hour behind Belgium.',
     },
     {
       q: 'Is Delegis an accountancy firm?',

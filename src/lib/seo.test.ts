@@ -3,6 +3,7 @@ import { locales, localeMeta, type Locale } from './i18n';
 import { getDict } from '@/content';
 import { getExtra } from '@/content/extra';
 import { cities } from '@/content/cities';
+import { cityDescription } from '@/content/city-local';
 
 /** Every indexable page's [title, description] for a locale. */
 function metas(l: Locale): [string, string, string][] {
@@ -23,7 +24,7 @@ function metas(l: Locale): [string, string, string][] {
     ['guides', x.guides.metaTitle, x.guides.metaDescription],
     ...t.services.map((s) => [`service:${s.id}`, s.metaTitle, s.metaDescription] as [string, string, string]),
     ...x.guides.articles.map((a) => [`guide:${a.id}`, a.metaTitle, a.metaDescription] as [string, string, string]),
-    ...cities.map((c) => [`city:${c.id}`, fill(t.cities.metaTitle, c.name[lang]), fill(t.cities.metaDescription, c.name[lang])] as [string, string, string]),
+    ...cities.map((c) => [`city:${c.id}`, fill(t.cities.metaTitle, c.name[lang]), cityDescription(l, c.id, c.name[lang])] as [string, string, string]),
   ];
 }
 
@@ -32,13 +33,13 @@ describe('SEO metadata', () => {
     describe(l, () => {
       const rows = metas(l);
 
-      it('keeps titles within 65 characters', () => {
-        const long = rows.filter(([, title]) => title.length > 65).map(([id, title]) => `${id} (${title.length}): ${title}`);
+      it('keeps titles within 60 characters', () => {
+        const long = rows.filter(([, title]) => title.length > 60).map(([id, title]) => `${id} (${title.length}): ${title}`);
         expect(long).toEqual([]);
       });
 
-      it('keeps descriptions between 70 and 170 characters', () => {
-        const bad = rows.filter(([, , d]) => d.length < 70 || d.length > 170).map(([id, , d]) => `${id} (${d.length})`);
+      it('keeps descriptions between 70 and 160 characters', () => {
+        const bad = rows.filter(([, , d]) => d.length < 70 || d.length > 160).map(([id, , d]) => `${id} (${d.length})`);
         expect(bad).toEqual([]);
       });
 
@@ -48,4 +49,14 @@ describe('SEO metadata', () => {
       });
     });
   }
+
+  it('never reuses a title or description across locales', () => {
+    const all = locales.flatMap((l) => metas(l).map(([id, title, d]) => ({ key: `${l}:${id}`, title, d })));
+    const dupes = (k: 'title' | 'd') =>
+      Object.values(Object.groupBy(all, (r) => r[k]))
+        .filter((g) => g!.length > 1)
+        .map((g) => g!.map((r) => r.key).join(' = '));
+    expect(dupes('title')).toEqual([]);
+    expect(dupes('d')).toEqual([]);
+  });
 });

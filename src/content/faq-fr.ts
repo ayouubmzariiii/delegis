@@ -37,7 +37,7 @@ const fr: Faqs = {
   about: [
     {
       q: 'Où sont basées les équipes de Delegis ?',
-      a: 'Le pilotage et la relation client sont à Bruxelles. La production se fait dans un centre sécurisé à Casablanca, à une heure de décalage de la Belgique.',
+      a: 'Le pilotage et la relation client sont à Bruxelles. La production est assurée par notre équipe à Casablanca, à une heure de décalage de la Belgique.',
     },
     {
       q: 'Delegis est-il un cabinet d’expertise comptable ?',

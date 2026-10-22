@@ -16,7 +16,7 @@ export function GET() {
     '',
     `> ${fr.home.metaDescription}`,
     '',
-    'Delegis is a B2B back-office provider: bookkeeping data entry, CODA bank reconciliation, VAT return preparation, Peppol e-invoicing, payroll preparation and customer service for companies and accounting firms in Belgium, with a production centre in Casablanca, Morocco.',
+    'Delegis is a B2B back-office provider: bookkeeping data entry, CODA bank reconciliation, VAT return preparation, Peppol e-invoicing, payroll preparation and customer service for companies and accounting firms in Belgium, with a production team in Casablanca, Morocco.',
     '',
     '## Key pages (fr-BE)',
     `- [${fr.nav.pricing}](${absUrl('fr-be', paths.pricing())}): public unit prices and an online estimator`,
