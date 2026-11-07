@@ -1,4 +1,5 @@
 import type { Extra } from './extra-types';
+import { guidesAr } from './guides-ar';
 
 const ar: Extra = {
   nav: { firms: 'مكاتب المحاسبة', method: 'منهجيتنا', guides: 'أدلة', careers: 'وظائف' },
@@ -158,6 +159,7 @@ const ar: Extra = {
     minutes: 'دقائق قراءة',
     updated: 'آخر تحديث في',
     tocTitle: 'المحتويات',
+    servicesTitle: 'خدمات مرتبطة',
     articles: [
       {
         id: 'peppol-2026',
@@ -339,6 +341,7 @@ const ar: Extra = {
           },
         ],
       },
+      ...guidesAr,
     ],
   },
 };

@@ -1,4 +1,5 @@
 import type { Extra } from './extra-types';
+import { guidesNl } from './guides-nl';
 
 const nl: Extra = {
   nav: { firms: 'Boekhoudkantoren', method: 'Werkwijze', guides: 'Gidsen', careers: 'Vacatures' },
@@ -158,6 +159,7 @@ const nl: Extra = {
     minutes: 'min leestijd',
     updated: 'Bijgewerkt op',
     tocTitle: 'Inhoud',
+    servicesTitle: 'Gerelateerde diensten',
     articles: [
       {
         id: 'peppol-2026',
@@ -339,6 +341,7 @@ const nl: Extra = {
           },
         ],
       },
+      ...guidesNl,
     ],
   },
 };

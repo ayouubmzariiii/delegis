@@ -1,14 +1,16 @@
 import type { QA } from './types';
 
 export type Article = {
-  id: 'peppol-2026' | 'cost-inhouse' | 'outsourcing-checklist' | 'why-morocco';
+  id: 'peppol-2026' | 'cost-inhouse' | 'outsourcing-checklist' | 'why-morocco' | 'vat-deadlines' | 'coda-reconciliation' | 'annual-closing' | 'late-payment';
   slug: string; // localized ASCII
   title: string; // H1
   metaTitle: string; // <= 60 chars
   metaDescription: string; // 140-160 chars
   excerpt: string;
   readingMinutes: number;
-  date: string; // ISO
+  date: string; // ISO, first publication
+  updated?: string; // ISO, last real edit (defaults to date)
+  /** Paragraphs and bullets may hold inline links: [text](service:vat), [text](guide:peppol-2026), [text](page:pricing). */
   sections: { h2: string; paragraphs: string[]; bullets?: string[] }[];
   faq?: QA[];
 };
@@ -87,6 +89,7 @@ export type Extra = {
     minutes: string;
     updated: string;
     tocTitle: string;
+    servicesTitle: string; // block of related services under an article
     articles: Article[];
   };
 };

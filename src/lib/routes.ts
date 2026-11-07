@@ -23,7 +23,7 @@ export const paths = {
   contact: () => '/contact',
   privacy: () => '/rgpd',
   city: (l: Locale, id: string) => `/villes/${cities.find((c) => c.id === id)!.slug[localeMeta[l].lang]}`,
-  login: () => '/login',
+  login: () => '/login', // app screen: linked as is, never with href(locale, …)
   portal: () => '/portal',
 } as const;
 

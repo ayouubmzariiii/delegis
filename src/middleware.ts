@@ -34,7 +34,6 @@ export function middleware(req: NextRequest) {
 
   if (isLocale(first)) {
     // Prefixed app URLs (/nl-be/login, /fr-be/portal…, /nl-be/admin…, /fr-be/staff…) → clean ones.
-    // Site links point to /<locale>/login so the redirect can remember the visitor's language.
     const section = rest[0];
     if (section === 'login' || section === 'portal' || section === 'admin' || section === 'staff') {
       url.pathname = `/${section === 'staff' ? 'admin' : section}${rest.length > 1 ? `/${rest.slice(1).join('/')}` : ''}`;
@@ -42,7 +41,10 @@ export function middleware(req: NextRequest) {
       if (section === 'portal' || section === 'login') res.cookies.set(LANG_COOKIE, first, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
       return res;
     }
-    return NextResponse.next();
+    // Remember the site language so /login (linked without a prefix) opens in it.
+    const res = NextResponse.next();
+    if (req.cookies.get(LANG_COOKIE)?.value !== first) res.cookies.set(LANG_COOKIE, first!, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
+    return res;
   }
 
   if (first === 'staff') {

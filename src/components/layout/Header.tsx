@@ -38,7 +38,7 @@ export function Header({ locale }: { locale: Locale }) {
         </nav>
         <div className="ms-auto flex items-center gap-1">
           <LangSwitcher locale={locale} table={alternatesTable()} label={t.nav.language} />
-          <Link href={href(locale, paths.login())} className="hidden rounded-full px-3 py-2 text-sm text-ink-600 hover:text-ink sm:block">
+          <Link href={paths.login()} className="hidden rounded-full px-3 py-2 text-sm text-ink-600 hover:text-ink sm:block">
             {t.nav.login}
           </Link>
           <ButtonLink href={href(locale, paths.contact())} className="hidden md:inline-flex" arrow>
@@ -49,7 +49,7 @@ export function Header({ locale }: { locale: Locale }) {
               <Icon name="menu" />
             </summary>
             <nav aria-label={ui.common.menu} className="absolute end-0 mt-2 w-[min(20rem,calc(100vw-2.5rem))] rounded-2xl border border-line bg-white p-2 shadow-lift">
-              {[...nav, { href: href(locale, paths.contact()), label: t.nav.contact }, { href: href(locale, paths.login()), label: t.nav.login }].map((n) => (
+              {[...nav, { href: href(locale, paths.contact()), label: t.nav.contact }, { href: paths.login(), label: t.nav.login }].map((n) => (
                 <Link key={n.href} href={n.href} className="block rounded-xl px-3 py-3 text-[15px] hover:bg-paper">
                   {n.label}
                 </Link>

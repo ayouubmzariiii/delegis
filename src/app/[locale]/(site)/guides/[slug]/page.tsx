@@ -6,7 +6,11 @@ import { href, paths } from '@/lib/routes';
 import { crumbs } from '@/lib/crumbs';
 import { site } from '@/lib/site';
 import { getDict } from '@/content';
-import { getExtra, getArticle } from '@/content/extra';
+import { getExtra, getArticle, articleServices } from '@/content/extra';
+import { ogKey } from '@/lib/pages';
+import { getUi } from '@/content/ui';
+import { ServiceIndex } from '@/components/sections/ServiceIndex';
+import { RichText, plainText } from '@/components/ui/RichText';
 import { Breadcrumbs } from '@/components/sections/PageHeader';
 import { Container, Section, Eyebrow } from '@/components/ui/primitives';
 import { Accordion } from '@/components/ui/Accordion';
@@ -31,7 +35,7 @@ async function load(params: P['params']) {
 export async function generateMetadata({ params }: P) {
   const { locale, a } = await load(params);
   const meta = buildMetadata({ locale, pathFor: (l) => paths.guide(l, a.id), title: a.metaTitle, description: a.metaDescription });
-  return { ...meta, openGraph: { ...meta.openGraph, type: 'article', publishedTime: a.date, modifiedTime: a.date } };
+  return { ...meta, openGraph: { ...meta.openGraph, type: 'article', publishedTime: a.date, modifiedTime: a.updated ?? a.date } };
 }
 
 const anchor = (i: number) => `s${i + 1}`;
@@ -43,6 +47,9 @@ export default async function ArticlePage({ params }: P) {
   const g = x.guides;
   const path = paths.guide(locale, a.id);
   const df = new Intl.DateTimeFormat(localeMeta[locale].hreflang, { dateStyle: 'long' });
+  const ui = getUi(locale);
+  const services = articleServices[a.id].map((id) => t.services.find((s) => s.id === id)!);
+  const words = a.sections.flatMap((s) => [s.h2, ...s.paragraphs, ...(s.bullets ?? [])]).join(' ').split(/\s+/).length;
 
   return (
     <>
@@ -51,12 +58,15 @@ export default async function ArticlePage({ params }: P) {
           '@context': 'https://schema.org',
           '@type': 'Article',
           headline: a.title,
-          description: a.metaDescription,
+          description: plainText(a.metaDescription),
           datePublished: a.date,
-          dateModified: a.date,
+          dateModified: a.updated ?? a.date,
           inLanguage: localeMeta[locale].hreflang,
           mainEntityOfPage: absUrl(locale, path),
-          image: `${site.url}/og.png`,
+          image: { '@type': 'ImageObject', url: `${site.url}/og/${locale}/${ogKey(path)}.png`, width: 1200, height: 630 },
+          articleSection: x.nav.guides,
+          wordCount: words,
+          about: services.map((s) => ({ '@type': 'Service', name: s.name, url: absUrl(locale, paths.service(locale, s.id)) })),
           author: { '@type': 'Organization', name: site.name, url: site.url },
           publisher: { '@id': `${site.url}/#org` },
         }}
@@ -67,7 +77,12 @@ export default async function ArticlePage({ params }: P) {
             <Breadcrumbs items={crumbs(locale, [x.nav.guides, paths.guides()], [a.title, path])} />
             <div className="mx-auto mt-16 max-w-3xl text-center">
               <Eyebrow>
-                <time dateTime={a.date}>{df.format(new Date(a.date))}</time> · {a.readingMinutes} {g.minutes}
+                {a.updated && a.updated !== a.date ? (
+                  <>{g.updated} <time dateTime={a.updated}>{df.format(new Date(a.updated))}</time></>
+                ) : (
+                  <time dateTime={a.date}>{df.format(new Date(a.date))}</time>
+                )}{' '}
+                · {a.readingMinutes} {g.minutes}
               </Eyebrow>
               <h1 className="mt-6 text-display-lg font-semibold">{a.title}</h1>
               <p className="mt-6 font-display text-2xl leading-snug text-ink-600">{a.excerpt}</p>
@@ -96,12 +111,12 @@ export default async function ArticlePage({ params }: P) {
               <section key={s.h2} id={anchor(i)} className="scroll-mt-24 pb-12">
                 <h2 className="text-display-md font-semibold">{s.h2}</h2>
                 {s.paragraphs.map((p) => (
-                  <p key={p.slice(0, 48)} className="mt-5 text-[18px] leading-[1.75] text-ink-700">{p}</p>
+                  <p key={p.slice(0, 48)} className="mt-5 text-[18px] leading-[1.75] text-ink-700"><RichText locale={locale} text={p} /></p>
                 ))}
                 {s.bullets && (
                   <ul className="mt-6 space-y-3 border-s-2 border-mark ps-6">
                     {s.bullets.map((b) => (
-                      <li key={b} className="text-[17px] leading-relaxed text-ink-700">{b}</li>
+                      <li key={b} className="text-[17px] leading-relaxed text-ink-700"><RichText locale={locale} text={b} /></li>
                     ))}
                   </ul>
                 )}
@@ -110,6 +125,15 @@ export default async function ArticlePage({ params }: P) {
           </div>
         </Container>
       </article>
+
+      <Section className="border-t border-line">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <h2 className="text-display-md font-semibold lg:col-span-4">{g.servicesTitle}</h2>
+          <div className="lg:col-span-8">
+            <ServiceIndex locale={locale} services={services} colService={ui.index.colService} colFrom={ui.index.colFrom} />
+          </div>
+        </div>
+      </Section>
 
       {a.faq && (
         <Section className="border-t border-line">

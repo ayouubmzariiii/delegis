@@ -7,6 +7,8 @@ import { formatEur } from '@/lib/pricing';
 import { getDict, getService, serviceCategory, servicePriceFrom } from '@/content';
 import { getHook } from '@/content/hook';
 import { getUi } from '@/content/ui';
+import { getExtra, guidesForService } from '@/content/extra';
+import Link from 'next/link';
 import { PageHeader } from '@/components/sections/PageHeader';
 import { ServiceIndex } from '@/components/sections/ServiceIndex';
 import { Section, Heading, ButtonLink, Eyebrow } from '@/components/ui/primitives';
@@ -47,6 +49,9 @@ export default async function ServicePage({ params }: P) {
     ...t.services.filter((x) => x.id !== s.id && serviceCategory[x.id] === serviceCategory[s.id]),
     ...t.services.filter((x) => x.id !== s.id && serviceCategory[x.id] !== serviceCategory[s.id]),
   ].slice(0, 4);
+
+  const x = getExtra(locale);
+  const guides = guidesForService(locale, s.id);
 
   const aside =
     price !== undefined ? (
@@ -130,6 +135,24 @@ export default async function ServicePage({ params }: P) {
           </div>
         </div>
       </Section>
+
+      {guides.length > 0 && (
+        <Section className="border-t border-line">
+          <div className="grid gap-10 lg:grid-cols-12">
+            <Heading index="05" label={x.nav.guides} title={x.home.guidesTitle} size="md" className="lg:col-span-4" />
+            <ul className="border-t-2 border-go-600 lg:col-span-8">
+              {guides.map((a) => (
+                <li key={a.id} className="border-b border-line">
+                  <Link href={href(locale, paths.guide(locale, a.id))} className="grid gap-2 py-6 transition-colors hover:text-go-700 md:grid-cols-12 md:gap-6">
+                    <span className="text-xl font-medium md:col-span-7">{a.title}</span>
+                    <span className="text-sm text-ink-600 md:col-span-5">{a.excerpt}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+      )}
     </>
   );
 }

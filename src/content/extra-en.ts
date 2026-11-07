@@ -1,4 +1,5 @@
 import type { Extra } from './extra-types';
+import { guidesEn } from './guides-en';
 
 const en: Extra = {
   nav: { firms: 'Accounting firms', method: 'Method', guides: 'Guides', careers: 'Careers' },
@@ -158,6 +159,7 @@ const en: Extra = {
     minutes: 'min read',
     updated: 'Updated on',
     tocTitle: 'Contents',
+    servicesTitle: 'Related services',
     articles: [
       {
         id: 'peppol-2026',
@@ -339,6 +341,7 @@ const en: Extra = {
           },
         ],
       },
+      ...guidesEn,
     ],
   },
 };

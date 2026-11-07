@@ -1,4 +1,5 @@
 import type { Extra } from './extra-types';
+import { guidesFr } from './guides-fr';
 
 const fr: Extra = {
   nav: { firms: 'Fiduciaires', method: 'Méthode', guides: 'Guides', careers: 'Carrières' },
@@ -158,6 +159,7 @@ const fr: Extra = {
     minutes: 'min de lecture',
     updated: 'Mis à jour le',
     tocTitle: 'Sommaire',
+    servicesTitle: 'Nos services liés',
     articles: [
       {
         id: 'peppol-2026',
@@ -339,6 +341,7 @@ const fr: Extra = {
           },
         ],
       },
+      ...guidesFr,
     ],
   },
 };

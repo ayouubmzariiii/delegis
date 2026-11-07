@@ -123,4 +123,20 @@ export const frMaArticles: Record<Article['id'], Meta> = {
     metaTitle: 'Le Maroc, terre de nearshore comptable | Delegis',
     metaDescription: 'Langue, fuseau horaire, formation, coût : pourquoi le Maroc s’impose pour le back-office comptable des entreprises européennes, et ses limites.',
   },
+  'vat-deadlines': {
+    metaTitle: 'TVA belge : délais de déclaration pour vos clients',
+    metaDescription: 'Mensuelle le 20, trimestrielle le 25 : les échéances TVA belges que doit tenir une équipe qui prépare les déclarations de clients belges depuis le Maroc.',
+  },
+  'coda-reconciliation': {
+    metaTitle: 'CODA : le rapprochement bancaire belge expliqué',
+    metaDescription: 'Lire un fichier CODA, lettrer les paiements avec la communication structurée et tenir un rapprochement hebdomadaire pour des clients belges, sans ressaisie.',
+  },
+  'annual-closing': {
+    metaTitle: 'Clôture belge et dépôt BNB : calendrier et checklist',
+    metaDescription: 'Écritures d’inventaire, assemblée générale et dépôt à la Banque nationale de Belgique dans les sept mois : la clôture d’une société belge, étape par étape.',
+  },
+  'late-payment': {
+    metaTitle: 'Retards de paiement en Belgique : règles et relances',
+    metaDescription: 'Délai de 60 jours maximum, indemnité de 40 € et intérêts légaux de 10,5 % en 2026 : les règles belges et une procédure de relance.',
+  },
 };

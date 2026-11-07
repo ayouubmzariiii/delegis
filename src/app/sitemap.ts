@@ -7,7 +7,7 @@ import { getExtra } from '@/content/extra';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Real edit dates, so Google keeps trusting lastmod: guides carry their own, everything else the last content pass.
-  const guideDates = new Map(locales.flatMap((l) => getExtra(l).guides.articles.map((a) => [absUrl(l, paths.guide(l, a.id)), a.date] as const)));
+  const guideDates = new Map(locales.flatMap((l) => getExtra(l).guides.articles.map((a) => [absUrl(l, paths.guide(l, a.id)), a.updated ?? a.date] as const)));
   return allPages().flatMap((pathFor) =>
     locales.map((l) => {
       const url = absUrl(l, pathFor(l));

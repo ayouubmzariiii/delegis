@@ -334,7 +334,7 @@ export const cityLocal: Record<string, Record<Lang, CityLocal>> = {
       sectors: ['Retail and distribution', 'Business services', 'Manufacturing and logistics', 'E-commerce and customer contact'],
     },
     ar: {
-      description: 'شركات الدار البيضاء: مسك المحاسبة والمكتب الخلفي وخدمة العملاء لدى فريق محلي، بالعربية والفرنسية والإنجليزية.',
+      description: 'شركات الدار البيضاء: مسك المحاسبة والمكتب الخلفي وخدمة العملاء وإدخال البيانات لدى فريق محلي ذي خبرة، بالعربية والفرنسية والإنجليزية.',
       title: 'الدار البيضاء: العاصمة الاقتصادية للمغرب',
       paragraphs: [
         'بصفتها أكبر ميناء ومركز أعمال في البلاد، تحتضن الدار البيضاء مقرات مجموعات عديدة والقطب المالي Casablanca Finance City ونسيجًا كثيفًا جدًا من الشركات الصغيرة والمتوسطة. وفيها يعمل فريق Delegis.',
@@ -376,7 +376,7 @@ export const cityLocal: Record<string, Record<Lang, CityLocal>> = {
       sectors: ['Engineering and consulting firms', 'Service and IT companies', 'Associations and organisations', 'Retail and liberal professions'],
     },
     ar: {
-      description: 'شركات ومؤسسات الرباط: مسك المحاسبة والمكتب الخلفي الإداري وإدخال البيانات، مع فريق بالدار البيضاء.',
+      description: 'شركات ومؤسسات الرباط: مسك المحاسبة والمكتب الخلفي الإداري وإدخال البيانات بشكل خارجي، مع فريق بالدار البيضاء ومسؤول ملف واحد.',
       title: 'الرباط: العاصمة الإدارية وقطب الخدمات',
       paragraphs: [
         'بصفتها عاصمة المملكة، تجمع الرباط الوزارات والمؤسسات والسفارات والمنظمات الدولية، وحولها منظومة من مكاتب الدراسات وشركات الخدمات والشركات التكنولوجية.',
@@ -418,7 +418,7 @@ export const cityLocal: Record<string, Record<Lang, CityLocal>> = {
       sectors: ['Manufacturing and automotive supply', 'Logistics and freight', 'Export and trading', 'Business services'],
     },
     ar: {
-      description: 'شركات طنجة: مسك المحاسبة والمكتب الخلفي وإدخال البيانات للصناعة واللوجستيك والتصدير نحو أوروبا.',
+      description: 'شركات طنجة: مسك المحاسبة والمكتب الخلفي وإدخال البيانات بشكل خارجي، لقطاعات الصناعة واللوجستيك والتصدير نحو أوروبا وموانئها.',
       title: 'طنجة: البوابة الصناعية نحو أوروبا',
       paragraphs: [
         'بفضل ميناء طنجة المتوسط ومناطق التسريع الصناعي وقطاع سيارات مهم، أصبحت طنجة أحد المحركات الصناعية للمغرب، على بعد كيلومترات قليلة من أوروبا.',
@@ -460,7 +460,7 @@ export const cityLocal: Record<string, Record<Lang, CityLocal>> = {
       sectors: ['Hotels and riads', 'Restaurants and events', 'Crafts and retail', 'Travel agencies and tourism services'],
     },
     ar: {
-      description: 'فنادق ورياضات وشركات مراكش: مسك المحاسبة والمكتب الخلفي وخدمة العملاء لاستيعاب الموسمية.',
+      description: 'فنادق ورياضات وشركات مراكش: مسك المحاسبة والمكتب الخلفي وخدمة العملاء بشكل خارجي، لاستيعاب ذروة المواسم السياحية دون توظيف إضافي.',
       title: 'مراكش: السياحة والفندقة والتظاهرات',
       paragraphs: [
         'بصفتها وجهة سياحية كبرى، تعيش مراكش على الفنادق والرياضات والمطاعم والتظاهرات والصناعة التقليدية. والنشاط فيها موسمي جدًا، والوثائق المحاسبية تتبع الإيقاع نفسه.',

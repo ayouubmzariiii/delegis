@@ -282,7 +282,7 @@ export default async function Home({ params }: LocaleParams) {
           <ButtonLink href={href(locale, paths.guides())} variant="secondary" className="hidden shrink-0 sm:inline-flex" arrow>{x.nav.guides}</ButtonLink>
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {x.guides.articles.map((a, i) => (
+          {[...x.guides.articles].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4).map((a, i) => (
             <Link key={a.id} href={href(locale, paths.guide(locale, a.id))} className={`group flex flex-col rounded-2xl border p-6 transition hover:-translate-y-0.5 hover:shadow-lift ${i === 0 ? 'border-transparent bg-go-600 text-white' : 'border-line bg-white'}`}>
               <span className={`text-xs font-semibold ${i === 0 ? 'text-white' : 'text-go-700'}`}>{a.readingMinutes} {x.guides.minutes}</span>
               <span className="mt-4 flex-1 font-display text-lg font-semibold leading-snug">{a.title}</span>

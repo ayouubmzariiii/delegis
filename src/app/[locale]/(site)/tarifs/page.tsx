@@ -85,7 +85,7 @@ export default async function PricingPage({ params }: LocaleParams) {
         <div className="mx-auto grid w-full max-w-page gap-12 px-5 sm:px-8 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Heading index="02" label={p.modelBTag} title={p.modelBTitle} lead={p.modelBText} size="md" />
-            <ButtonLink href={href(locale, paths.login())} variant="secondary" className="mt-8" arrow>
+            <ButtonLink href={paths.login()} variant="secondary" className="mt-8" arrow>
               {p.docCta}
             </ButtonLink>
             <p className="mt-4 font-mono text-[11px] uppercase tracking-wider text-ink-500">{t.common.exclVat}</p>
