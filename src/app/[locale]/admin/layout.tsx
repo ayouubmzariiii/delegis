@@ -18,8 +18,9 @@ export default async function AdminLayout({ children, params }: { children: Reac
   const user = await currentUser();
   if (!user) redirect(`/${locale}/login`);
   if (user.role !== 'staff') redirect(`/portal`);
-  const [c] = await q<{ queue: string; access: string }>(
-    `SELECT (SELECT count(*) FROM dossiers WHERE status = 'received') AS queue, (SELECT count(*) FROM accesses WHERE status = 'requested') AS access`,
+  const [c] = await q<{ queue: string; access: string; leads: string }>(
+    `SELECT (SELECT count(*) FROM dossiers WHERE status = 'received') AS queue, (SELECT count(*) FROM accesses WHERE status = 'requested') AS access,
+            (SELECT count(*) FROM leads WHERE created_at > now() - interval '7 days') AS leads`,
   );
   const base = `/admin`;
   return (
@@ -43,7 +44,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
           </div>
         </div>
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
-          <AdminNav base={base} counts={{ queue: Number(c?.queue ?? 0), access: Number(c?.access ?? 0) }} />
+          <AdminNav base={base} counts={{ queue: Number(c?.queue ?? 0), access: Number(c?.access ?? 0), leads: Number(c?.leads ?? 0) }} />
         </div>
       </header>
       <main id="main" className="mx-auto max-w-7xl px-4 py-8 sm:px-8">{children}</main>

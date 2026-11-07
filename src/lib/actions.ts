@@ -37,6 +37,8 @@ import { STAFF, ensureDemoSeeded } from './seed';
 import { putFile } from './storage';
 import { createSession, currentUser, destroySession } from './auth';
 import { CLIENT_COOKIE, ownedClientId } from './clientScope';
+import { isDemoEmail, isDemoOn } from './demo-flag';
+import { notifyLead } from './notify';
 
 export type FormState = { ok?: boolean; error?: string } | undefined;
 
@@ -68,7 +70,7 @@ export async function submitLead(_: FormState, f: FormData): Promise<FormState> 
   const data: Record<string, string> = {};
   for (const k of ['name', 'company', 'email', 'phone', 'service', 'message', 'estimate']) data[k] = str(f, k);
   await createLead(loc(f), data);
-  // TODO: forward to CRM / e-mail (e.g. Resend, HubSpot) once credentials exist.
+  await notifyLead(loc(f), data);
   return { ok: true };
 }
 
@@ -89,6 +91,8 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
   const email = str(f, 'email', 200).toLowerCase();
   // Demo accounts are created on first use, whether through a demo button or a password login.
   if ((await demoEnabled()) && (email === DEMO_EMAIL || STAFF.some((s) => s.email === email))) await ensureDemoSeeded();
+  // With the demo off, its seeded accounts (and their known password) must not open anything.
+  if (!isDemoOn() && isDemoEmail(email)) return { error: 'invalid' };
   const user = await findUserByEmail(email);
   if (!user || !(await bcrypt.compare(String(f.get('password') ?? ''), user.passwordHash))) return { error: 'invalid' };
   await createSession(user.id);
@@ -98,7 +102,7 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
 
 /** Demo is on unless DEMO_ENABLED=false (turn it off before launch). */
 export async function demoEnabled() {
-  return process.env.DEMO_ENABLED !== 'false';
+  return isDemoOn();
 }
 
 /**

@@ -28,6 +28,7 @@ npm run check                # typecheck + lint + tests
 2. Add a **Neon Postgres** database (Vercel Marketplace → Storage) — this sets `DATABASE_URL`.
 3. Add a **Vercel Blob** store — this sets `BLOB_READ_WRITE_TOKEN`.
 4. Set `AUTH_SECRET` (long random string) and `NEXT_PUBLIC_SITE_URL`.
+   Optional: `RESEND_API_KEY` + `LEAD_NOTIFY_EMAIL` to receive contact requests by e-mail (they are always listed in Admin → Demandes). The demo is off in production unless `DEMO_ENABLED=true`.
 5. Deploy. The schema is created on first request. Seed the demo once from your machine:
    ```bash
    DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… npm run db:seed
@@ -75,7 +76,7 @@ Every action writes to the database and creates a notification on the firm's sid
 - **real generated files** (`src/lib/docgen.ts`): valid PDF invoices and reports, Belgian CODA statements (128-char records), Peppol BIS 3.0 UBL invoices, CSV exports.
 
 Password for all demo users: `DEMO_PASSWORD` (default `demo-delegis-2026`). The login page also has one-click buttons for the client and the team.
-All people and companies are fictional. Turn the demo off with `DEMO_ENABLED=false`.
+All people and companies are fictional. The demo is on in development and off in production unless `DEMO_ENABLED=true`; while it is off, the demo accounts cannot sign in.
 
 ## Structure
 
@@ -97,6 +98,6 @@ Static HTML for 250+ indexable pages, localized slugs, canonical + full `hreflan
 
 ## Before going live
 
-- Set `DEMO_ENABLED=false` (or keep it as a public sales demo).
-- Replace placeholder office addresses, phone numbers and VAT number in `src/lib/site.ts`.
-- Wire `submitLead` to e-mail/CRM; replace Unsplash photos with your own.
+- Keep the demo off (the default in production). Turn it on only as a sales demo on a deployment without real client data: the demo team account opens the back-office.
+- Add the company number (BCE/KBO or ICE) to `site.vat` in `src/lib/site.ts`; Belgian law requires it on business sites.
+- Set `RESEND_API_KEY` and `LEAD_NOTIFY_EMAIL` to get contact requests by e-mail; replace Unsplash photos with your own.

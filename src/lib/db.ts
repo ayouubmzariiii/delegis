@@ -2,7 +2,7 @@ import 'server-only';
 import crypto from 'crypto';
 import { q } from './sql';
 import { open, seal } from './vault';
-import type { Access, AccessKind, TeamMember, Client, Deliverable, Dossier, DossierStatus, Invoice, Message, Notification, RequestItem, StoredFile, TimelineStep, User, Workspace } from './types';
+import type { Access, AccessKind, TeamMember, Client, Deliverable, Dossier, DossierStatus, Invoice, Lead, Message, Notification, RequestItem, StoredFile, TimelineStep, User, Workspace } from './types';
 
 export type { Access, TeamMember, Client, Deliverable, Dossier, Invoice, Lead, Message, Notification, RequestItem, StoredFile, User, Workspace } from './types';
 
@@ -261,6 +261,12 @@ export async function markNotificationsRead(userId: string) {
 
 export async function createLead(locale: string, data: Record<string, string>) {
   await q(`INSERT INTO leads (id, locale, data) VALUES ($1,$2,$3::jsonb)`, [newId(), locale, JSON.stringify(data)]);
+}
+
+/** Contact-form requests, newest first, for the back-office. */
+export async function listLeads(limit = 200): Promise<Lead[]> {
+  const rows = await q(`SELECT * FROM leads ORDER BY created_at DESC LIMIT $1`, [limit]);
+  return rows.map((r) => ({ id: String(r.id), locale: String(r.locale), createdAt: iso(r.created_at), data: (typeof r.data === 'string' ? JSON.parse(r.data) : r.data) as Record<string, string> }));
 }
 
 /* ---------- back-office (Delegis staff) ---------- */

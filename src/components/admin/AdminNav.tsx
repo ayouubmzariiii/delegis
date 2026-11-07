@@ -6,12 +6,13 @@ import { Icon } from '@/components/ui/Icon';
 import { cx } from '@/components/ui/primitives';
 
 /** Tabs of the Delegis back-office, with live counters. */
-export function AdminNav({ base, counts }: { base: string; counts: { queue: number; access: number } }) {
+export function AdminNav({ base, counts }: { base: string; counts: { queue: number; access: number; leads: number } }) {
   const pathname = usePathname() ?? base;
   const items = [
     { href: base, label: 'File de travail', icon: 'folder', badge: counts.queue, exact: true },
     { href: `${base}/cabinets`, label: 'Cabinets', icon: 'users' },
     { href: `${base}/acces`, label: 'Accès', icon: 'key', badge: counts.access },
+    { href: `${base}/demandes`, label: 'Demandes', icon: 'inbox', badge: counts.leads },
     { href: `${base}/equipe`, label: 'Équipe', icon: 'user' },
   ];
   return (

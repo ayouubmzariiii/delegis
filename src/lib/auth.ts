@@ -2,6 +2,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
 import { findUser } from './db';
+import { isDemoEmail, isDemoOn } from './demo-flag';
 
 const COOKIE = 'delegis_session';
 const MAX_AGE = 60 * 60 * 24 * 7;
@@ -36,7 +37,10 @@ export async function currentUser() {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret());
-    return (await findUser(String(payload.sub))) ?? null;
+    const user = await findUser(String(payload.sub));
+    // Sessions opened while the demo was on stop working as soon as it is switched off.
+    if (!user || (!isDemoOn() && isDemoEmail(user.email))) return null;
+    return user;
   } catch {
     return null;
   }
