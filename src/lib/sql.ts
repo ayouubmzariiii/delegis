@@ -150,6 +150,13 @@ CREATE TABLE IF NOT EXISTS leads (
 
 async function connect(): Promise<QueryFn> {
   const url = process.env.DATABASE_URL;
+  if (url && !/\.neon\.tech\b/.test(url) && process.env.DELEGIS_DB_DRIVER !== 'neon') {
+    // Self-hosted PostgreSQL over TCP (node-postgres connection pool).
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: url, max: Number(process.env.DELEGIS_DB_POOL) || 10 });
+    await pool.query(SCHEMA);
+    return async (text, params = []) => (await pool.query(text, params)).rows as Row[];
+  }
   if (url) {
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(url);

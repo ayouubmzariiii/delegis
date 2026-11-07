@@ -20,6 +20,7 @@
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.6",
     "next": "15.3.9",
+    "pg": "^8.23.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "0.0.1"
@@ -28,6 +29,7 @@
     "@eslint/eslintrc": "^3.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "autoprefixer": "^10.4.20",
