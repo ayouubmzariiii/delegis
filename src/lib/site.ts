@@ -9,8 +9,8 @@ const phone = '+212 684199400';
 
 export const site = {
   name: 'Delegis',
-  url: (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) || 'https://www.delegis.be').replace(/\/$/, ''),
-  email: 'hello@delegis.be',
+  url: (process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) || 'https://delegis.online').replace(/\/$/, ''),
+  email: 'contact@delegis.online',
   phone,
   phoneE164: toE164(phone),
   // The team works remotely: locations stay at city level, with no street address or coordinates.
@@ -22,7 +22,6 @@ export const site = {
   vat: undefined as string | undefined,
   // Date of the last real content change; feeds sitemap lastmod. Update it when copy changes.
   contentUpdated: '2026-10-22',
-  social: { linkedin: 'https://www.linkedin.com/company/delegis' },
 };
 
 export type Office = (typeof site.offices)[number];

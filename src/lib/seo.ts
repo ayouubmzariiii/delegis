@@ -63,7 +63,6 @@ export function organizationLd(locale: Locale) {
         foundingLocation: { '@type': 'Place', name: 'Bruxelles, Belgique' },
         telephone: site.phoneE164,
         contactPoint: [{ '@type': 'ContactPoint', contactType: 'sales', telephone: site.phoneE164, email: site.email, areaServed: site.offices.map((o) => o.country), availableLanguage: ['fr', 'nl', 'en', 'ar'] }],
-        sameAs: [site.social.linkedin],
         areaServed: [
           { '@type': 'Country', name: 'Belgium' },
           { '@type': 'Country', name: 'Morocco' },

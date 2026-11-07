@@ -621,7 +621,7 @@ const fr: Dict = {
     consent: 'J’accepte que Delegis traite mes données pour répondre à ma demande.',
     send: 'Envoyer la demande',
     sent: 'Merci ! Votre demande est bien envoyée. Nous vous répondons sous 24 h ouvrables.',
-    error: 'Une erreur est survenue. Écrivez-nous directement à hello@delegis.be.',
+    error: 'Une erreur est survenue. Écrivez-nous directement à contact@delegis.online.',
     officesTitle: 'Où nous trouver',
   },
   privacy: {
@@ -636,7 +636,7 @@ const fr: Dict = {
       { title: 'Accès contrôlés', text: 'Accès nominatifs avec authentification à deux facteurs, principe du moindre privilège et journalisation de chaque action.' },
       { title: 'Collaborateurs engagés', text: 'Chaque collaborateur signe un accord de confidentialité et suit une formation annuelle à la sécurité.' },
       { title: 'Postes sécurisés', text: 'Travail sur postes gérés, sans clé USB ni impression.' },
-      { title: 'Vos droits', text: 'Pour toute question ou demande d’exercice de vos droits : privacy@delegis.be.' },
+      { title: 'Vos droits', text: 'Pour toute question ou demande d’exercice de vos droits : contact@delegis.online.' },
     ],
   },
   auth: {

@@ -289,7 +289,7 @@ export function StaffForm({ locale, member }: { locale: string; member?: { id: s
       <input name="phone" defaultValue={member?.phone} placeholder="Téléphone" className={field} />
       {!member && (
         <>
-          <input name="email" type="email" required placeholder="prenom.nom@delegis.be" className={field} />
+          <input name="email" type="email" required placeholder="prenom.nom@delegis.online" className={field} />
           <input name="password" type="text" minLength={8} required autoComplete="off" placeholder="Mot de passe provisoire" className={field} />
         </>
       )}

@@ -621,7 +621,7 @@ const en: Dict = {
     consent: 'I agree that Delegis may process my data to respond to my request.',
     send: 'Send request',
     sent: 'Thank you! Your request has been sent. We will reply within 24 working hours.',
-    error: 'Something went wrong. Please write to us directly at hello@delegis.be.',
+    error: 'Something went wrong. Please write to us directly at contact@delegis.online.',
     officesTitle: 'Where we are',
   },
   privacy: {
@@ -636,7 +636,7 @@ const en: Dict = {
       { title: 'Controlled access', text: 'Personal user accounts with two-factor authentication, least-privilege principle and logging of every action.' },
       { title: 'Committed staff', text: 'Every team member signs a confidentiality agreement and completes annual security training.' },
       { title: 'Secure workstations', text: 'Work on managed workstations, with no USB sticks or printing.' },
-      { title: 'Your rights', text: 'For any question or request to exercise your rights: privacy@delegis.be.' },
+      { title: 'Your rights', text: 'For any question or request to exercise your rights: contact@delegis.online.' },
     ],
   },
   auth: {

@@ -621,7 +621,7 @@ const nl: Dict = {
     consent: 'Ik ga ermee akkoord dat Delegis mijn gegevens verwerkt om op mijn aanvraag te antwoorden.',
     send: 'Aanvraag versturen',
     sent: 'Bedankt! Uw aanvraag is goed verzonden. Wij antwoorden binnen 24 werkuren.',
-    error: 'Er is een fout opgetreden. Schrijf ons rechtstreeks via hello@delegis.be.',
+    error: 'Er is een fout opgetreden. Schrijf ons rechtstreeks via contact@delegis.online.',
     officesTitle: 'Waar we zijn',
   },
   privacy: {
@@ -636,7 +636,7 @@ const nl: Dict = {
       { title: 'Gecontroleerde toegang', text: 'Persoonlijke toegang met tweestapsverificatie, het principe van minimale rechten en logging van elke actie.' },
       { title: 'Geëngageerde medewerkers', text: 'Elke medewerker ondertekent een geheimhoudingsovereenkomst en volgt jaarlijks een beveiligingsopleiding.' },
       { title: 'Beveiligde werkposten', text: 'Werken op beheerde werkposten, zonder USB-sticks of printen.' },
-      { title: 'Uw rechten', text: 'Voor elke vraag of om uw rechten uit te oefenen: privacy@delegis.be.' },
+      { title: 'Uw rechten', text: 'Voor elke vraag of om uw rechten uit te oefenen: contact@delegis.online.' },
     ],
   },
   auth: {
