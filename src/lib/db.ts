@@ -263,6 +263,12 @@ export async function createLead(locale: string, data: Record<string, string>) {
   await q(`INSERT INTO leads (id, locale, data) VALUES ($1,$2,$3::jsonb)`, [newId(), locale, JSON.stringify(data)]);
 }
 
+/** Makes an account a Delegis staff member with a new password (first-admin bootstrap). */
+export async function promoteToStaff(id: string, passwordHash: string) {
+  const [r] = await q(`UPDATE users SET role = 'staff', company = 'Delegis', password_hash = $2 WHERE id = $1 RETURNING *`, [id, passwordHash]);
+  return toUser(r);
+}
+
 /** Contact-form requests, newest first, for the back-office. */
 export async function listLeads(limit = 200): Promise<Lead[]> {
   const rows = await q(`SELECT * FROM leads ORDER BY created_at DESC LIMIT $1`, [limit]);

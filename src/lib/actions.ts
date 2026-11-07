@@ -39,6 +39,7 @@ import { createSession, currentUser, destroySession } from './auth';
 import { CLIENT_COOKIE, ownedClientId } from './clientScope';
 import { isDemoEmail, isDemoOn } from './demo-flag';
 import { notifyLead } from './notify';
+import { bootstrapAdmin } from './admin-bootstrap';
 
 export type FormState = { ok?: boolean; error?: string } | undefined;
 
@@ -93,8 +94,9 @@ export async function login(_: FormState, f: FormData): Promise<FormState> {
   if ((await demoEnabled()) && (email === DEMO_EMAIL || STAFF.some((s) => s.email === email))) await ensureDemoSeeded();
   // With the demo off, its seeded accounts (and their known password) must not open anything.
   if (!isDemoOn() && isDemoEmail(email)) return { error: 'invalid' };
-  const user = await findUserByEmail(email);
-  if (!user || !(await bcrypt.compare(String(f.get('password') ?? ''), user.passwordHash))) return { error: 'invalid' };
+  const password = String(f.get('password') ?? '');
+  const user = (await bootstrapAdmin(email, password)) ?? (await findUserByEmail(email));
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return { error: 'invalid' };
   await createSession(user.id);
   await rememberLang(loc(f));
   redirect(landing(user));

@@ -114,3 +114,37 @@ describe('demo accounts', () => {
     expect(await attempt()).toEqual({ error: 'invalid' });
   });
 });
+
+describe('first admin', () => {
+  const attempt = (email: string, password: string) => login(undefined, form({ email, password, locale: 'fr-be' }));
+
+  it('is created by signing in with ADMIN_EMAIL and ADMIN_PASSWORD', async () => {
+    const { findUserByEmail } = await import('./db');
+    vi.stubEnv('ADMIN_EMAIL', 'Boss@Example.be');
+    vi.stubEnv('ADMIN_PASSWORD', 'a-long-admin-password');
+    expect(await attempt('boss@example.be', 'wrong-password-here')).toEqual({ error: 'invalid' });
+    expect(await findUserByEmail('boss@example.be')).toBeUndefined();
+    await expect(attempt('boss@example.be', 'a-long-admin-password')).rejects.toThrow('redirect');
+    expect(await findUserByEmail('boss@example.be')).toMatchObject({ role: 'staff', company: 'Delegis' });
+    await expect(attempt('boss@example.be', 'a-long-admin-password')).rejects.toThrow('redirect'); // and again
+  });
+
+  it('takes over a client account someone registered with that address', async () => {
+    const { createUser, findUserByEmail } = await import('./db');
+    const bcrypt = (await import('bcryptjs')).default;
+    await createUser({ email: 'owner@example.be', name: 'Squatter', company: 'X', passwordHash: await bcrypt.hash('squatter-pass', 4) });
+    vi.stubEnv('ADMIN_EMAIL', 'owner@example.be');
+    vi.stubEnv('ADMIN_PASSWORD', 'the-real-admin-password');
+    await expect(attempt('owner@example.be', 'the-real-admin-password')).rejects.toThrow('redirect');
+    expect(await findUserByEmail('owner@example.be')).toMatchObject({ role: 'staff' });
+    expect(await attempt('owner@example.be', 'squatter-pass')).toEqual({ error: 'invalid' });
+  });
+
+  it('is ignored when the password is too short to be safe', async () => {
+    const { findUserByEmail } = await import('./db');
+    vi.stubEnv('ADMIN_EMAIL', 'short@example.be');
+    vi.stubEnv('ADMIN_PASSWORD', 'short');
+    expect(await attempt('short@example.be', 'short')).toEqual({ error: 'invalid' });
+    expect(await findUserByEmail('short@example.be')).toBeUndefined();
+  });
+});

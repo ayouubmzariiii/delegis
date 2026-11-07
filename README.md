@@ -28,7 +28,7 @@ npm run check                # typecheck + lint + tests
 2. Add a **Neon Postgres** database (Vercel Marketplace → Storage) — this sets `DATABASE_URL`.
 3. Add a **Vercel Blob** store — this sets `BLOB_READ_WRITE_TOKEN`.
 4. Set `AUTH_SECRET` (long random string) and `NEXT_PUBLIC_SITE_URL`.
-   Optional: `RESEND_API_KEY` + `LEAD_NOTIFY_EMAIL` to receive contact requests by e-mail (they are always listed in Admin → Demandes). The demo is off in production unless `DEMO_ENABLED=true`.
+   Optional: `RESEND_API_KEY` + `LEAD_NOTIFY_EMAIL` to receive contact requests by e-mail (they are always listed in Admin → Demandes). The demo is off in production unless `DEMO_ENABLED=true`. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` (12+ characters), then sign in with them on /login to open the back-office and add your team.
 5. Deploy. The schema is created on first request. Seed the demo once from your machine:
    ```bash
    DATABASE_URL=… BLOB_READ_WRITE_TOKEN=… npm run db:seed
