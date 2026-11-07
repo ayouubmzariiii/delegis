@@ -25,6 +25,16 @@ const nextConfig = {
     remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com' }],
   },
   experimental: { serverActions: { bodySizeLimit: '100mb' } },
+  // Conventional icon URLs that apps and favicon services request without reading the page.
+  async rewrites() {
+    return [
+      { source: '/apple-touch-icon.png', destination: '/apple-icon.png' },
+      { source: '/apple-touch-icon-precomposed.png', destination: '/apple-icon.png' },
+      { source: '/favicon.svg', destination: '/icon.svg' },
+      { source: '/favicon.png', destination: '/icon-192.png' },
+      { source: '/site.webmanifest', destination: '/manifest.webmanifest' },
+    ];
+  },
   async headers() {
     return [
       {

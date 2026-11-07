@@ -22,12 +22,14 @@ export const metadata: Metadata = {
   // Google Search wants a crawlable square icon in a multiple of 48 px; /favicon.ico also covers clients that request it directly.
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-96.png', sizes: '96x96', type: 'image/png' },
+      // Largest PNG first: fetchers that only read the first icon get one Google accepts (multiple of 48 px).
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
     ],
-    apple: '/apple-icon.png',
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
   authors: [{ name: site.name, url: site.url }],

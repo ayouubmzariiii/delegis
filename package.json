@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test",
+    "indexnow": "node scripts/indexnow.mjs",
     "db:seed": "tsx --conditions react-server --env-file-if-exists=.env.local scripts/seed.ts"
   },
   "dependencies": {
