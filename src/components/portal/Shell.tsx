@@ -86,7 +86,6 @@ export function Shell({ ctx, children }: { ctx: PortalContext; children: ReactNo
           ← {a.nav.backToSite}
         </Link>
         <form action={logout}>
-          <input type="hidden" name="locale" value={locale} />
           <button className="flex items-center gap-1.5 text-ink-500 hover:text-ink" title={a.nav.logout}>
             <Icon name="logout" className="h-4 w-4" />
             <span className="sr-only">{a.nav.logout}</span>

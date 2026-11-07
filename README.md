@@ -7,7 +7,7 @@ running on Postgres with file storage — designed to deploy on **Vercel**.
 ## Stack
 
 - **Next.js 15** (App Router, React 19, Server Actions), TypeScript `strict`, Tailwind CSS 3
-- **Postgres** — Neon (serverless driver) in production via `DATABASE_URL`; [PGlite](https://pglite.dev) (embedded Postgres) locally and in tests. Same schema and SQL everywhere (`src/lib/sql.ts`).
+- **Postgres** — Neon (serverless driver) on Vercel, or any self-hosted PostgreSQL through `pg` (node-postgres), via `DATABASE_URL`; [PGlite](https://pglite.dev) (embedded Postgres) locally and in tests. Same schema and SQL everywhere (`src/lib/sql.ts`).
 - **File storage** — Vercel Blob in production via `BLOB_READ_WRITE_TOKEN`; `./data/uploads` locally (`src/lib/storage.ts`). Blob URLs are never exposed: downloads go through an authenticated route.
 - Auth: signed JWT session cookie (`jose`) + `bcryptjs`; roles `client` and `staff`
 - **Vitest** (unit + DB integration tests on real Postgres), **ESLint**
@@ -21,6 +21,26 @@ npm run db:seed              # creates the schema and inserts the demo (PGlite i
 npm run dev                  # http://localhost:3000 → /fr-be
 npm run check                # typecheck + lint + tests
 ```
+
+## Self-host on a server (own PostgreSQL, files on disk)
+
+No Vercel services are needed. Any `DATABASE_URL` that is not a `*.neon.tech` host is opened with `pg`
+(connection pool, size `DELEGIS_DB_POOL`, default 10); set `DELEGIS_DB_DRIVER=neon` to force the Neon driver.
+
+```bash
+sudo -u postgres psql -c "CREATE ROLE delegis LOGIN PASSWORD '…'" -c "CREATE DATABASE delegis OWNER delegis"
+```
+
+`.env.local`:
+
+```
+DATABASE_URL=postgresql://delegis:…@127.0.0.1:5432/delegis
+DELEGIS_STORAGE=disk   # keep uploads in ./data/uploads instead of the stored_files table
+```
+
+Then `npm ci && npm run build && npm start`. The schema is created on the first request.
+Behind a reverse proxy, start Next with `-H localhost` (not `127.0.0.1`): with `127.0.0.1` Next.js treats the
+`/portal` and `/admin` middleware rewrites as external URLs and they fail.
 
 ## Deploy on Vercel
 

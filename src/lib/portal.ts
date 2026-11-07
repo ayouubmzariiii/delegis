@@ -12,7 +12,7 @@ import { getDict } from '@/content';
 const load = cache(async (locale: string) => {
   const l = await resolveLocale(Promise.resolve({ locale }));
   const user = await currentUser();
-  if (!user) redirect(`/${l}/login`);
+  if (!user) redirect('/login');
   if (user.role === 'staff') redirect(`/admin`);
   const [account, manager] = await Promise.all([getWorkspace(user.id), managerOf(user)]);
   const clientId = await selectedClientId(user, account.clients);

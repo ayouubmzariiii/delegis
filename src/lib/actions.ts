@@ -114,7 +114,7 @@ export async function demoEnabled() {
  */
 export async function loginDemo(_: FormState, f: FormData): Promise<FormState> {
   const l = loc(f);
-  if (!(await demoEnabled())) redirect(`/${l}/login`);
+  if (!(await demoEnabled())) redirect('/login');
   await ensureDemoSeeded();
   const user = await findUserByEmail(f.get('as') === 'staff' ? STAFF[1].email : DEMO_EMAIL);
   if (!user) return { error: 'invalid' };
@@ -124,9 +124,9 @@ export async function loginDemo(_: FormState, f: FormData): Promise<FormState> {
   redirect(landing(user));
 }
 
-export async function logout(f: FormData) {
+export async function logout() {
   await destroySession();
-  redirect(`/${loc(f)}/login`);
+  redirect('/login');
 }
 
 /* ---------- portal ---------- */

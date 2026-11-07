@@ -15,7 +15,8 @@ import { q } from './sql';
 const LOCAL_DIR = path.join(process.cwd(), 'data', 'uploads');
 
 const blobEnabled = () => !!process.env.BLOB_READ_WRITE_TOKEN;
-const dbEnabled = () => !!process.env.DATABASE_URL || process.env.DELEGIS_STORAGE === 'db';
+// DELEGIS_STORAGE=disk keeps files in ./data/uploads even with DATABASE_URL set (self-hosted server).
+const dbEnabled = () => process.env.DELEGIS_STORAGE !== 'disk' && (!!process.env.DATABASE_URL || process.env.DELEGIS_STORAGE === 'db');
 
 /** Normalises a user-supplied file name into a safe key segment. */
 export const safeName = (name: string) => name.replace(/[^\w.\-]+/g, '_').slice(-120) || 'file';
