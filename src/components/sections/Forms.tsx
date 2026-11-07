@@ -125,7 +125,7 @@ export function AuthForm({ t, locale, mode, connecting }: { t: Dict['auth']; loc
         {pending && connecting ? connecting : mode === 'login' ? t.login : t.register}
       </button>
       <p className="text-center text-sm">
-        <Link href={`/${locale}/login${mode === 'login' ? '?mode=register' : ''}`} className="font-medium text-ink underline-offset-4 hover:underline">
+        <Link href={`/login${mode === 'login' ? '?mode=register' : ''}`} className="font-medium text-ink underline-offset-4 hover:underline">
           {mode === 'login' ? t.toRegister : t.toLogin}
         </Link>
       </p>

@@ -14,16 +14,16 @@ function pickLocale(req: NextRequest) {
   return defaultLocale;
 }
 
-/** App screens live at /portal and /admin, without a language prefix. */
-const APP = /^\/(portal|admin)(\/.*)?$/;
+/** App screens live at /login, /portal and /admin, without a language prefix. */
+const APP = /^\/(login|portal|admin)(\/.*)?$/;
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const [, first, ...rest] = pathname.split('/');
   const url = req.nextUrl.clone();
 
-  // /portal…, /admin… → rendered by the [locale] routes. The admin is French-only;
-  // the portal uses the language the user signed in with (cookie), else the browser's.
+  // /login, /portal…, /admin… → rendered by the [locale] routes. The admin is French-only;
+  // login and the portal use the language remembered in the cookie, else the browser's.
   const app = pathname.match(APP);
   if (app) {
     const cookie = req.cookies.get(LANG_COOKIE)?.value;
@@ -33,12 +33,13 @@ export function middleware(req: NextRequest) {
   }
 
   if (isLocale(first)) {
-    // Old prefixed app URLs (/fr-be/portal…, /nl-be/admin…, /fr-be/staff…) → clean ones.
+    // Prefixed app URLs (/nl-be/login, /fr-be/portal…, /nl-be/admin…, /fr-be/staff…) → clean ones.
+    // Site links point to /<locale>/login so the redirect can remember the visitor's language.
     const section = rest[0];
-    if (section === 'portal' || section === 'admin' || section === 'staff') {
+    if (section === 'login' || section === 'portal' || section === 'admin' || section === 'staff') {
       url.pathname = `/${section === 'staff' ? 'admin' : section}${rest.length > 1 ? `/${rest.slice(1).join('/')}` : ''}`;
       const res = NextResponse.redirect(url, 308);
-      if (section === 'portal') res.cookies.set(LANG_COOKIE, first, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
+      if (section === 'portal' || section === 'login') res.cookies.set(LANG_COOKIE, first, { sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 365 });
       return res;
     }
     return NextResponse.next();

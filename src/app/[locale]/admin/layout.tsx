@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { resolveLocale } from '@/lib/params';
 import { currentUser } from '@/lib/auth';
 import { logout } from '@/lib/actions';
 import { q } from '@/lib/sql';
@@ -13,10 +12,9 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Back-office · Delegis', robots: { index: false, follow: false } };
 
 /** Internal back-office for the Delegis team (French UI: the production team works in French). */
-export default async function AdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
-  const locale = await resolveLocale(params);
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
-  if (!user) redirect(`/${locale}/login`);
+  if (!user) redirect('/login');
   if (user.role !== 'staff') redirect(`/portal`);
   const [c] = await q<{ queue: string; access: string; leads: string }>(
     `SELECT (SELECT count(*) FROM dossiers WHERE status = 'received') AS queue, (SELECT count(*) FROM accesses WHERE status = 'requested') AS access,
@@ -38,7 +36,6 @@ export default async function AdminLayout({ children, params }: { children: Reac
               {user.title && <span className="block text-xs text-ink-500">{user.title}</span>}
             </span>
             <form action={logout}>
-              <input type="hidden" name="locale" value={locale} />
               <button className="rounded-lg px-3 py-1.5 text-sm text-ink-600 hover:bg-paper hover:text-ink">Déconnexion</button>
             </form>
           </div>
