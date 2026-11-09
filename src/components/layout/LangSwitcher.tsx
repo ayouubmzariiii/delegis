@@ -1,18 +1,28 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { locales, localeMeta, type Locale } from '@/lib/i18n';
 
-/** `table` maps each page to its equivalent path in every locale. */
-export function LangSwitcher({ locale, table, label }: { locale: Locale; table: Record<Locale, string>[]; label: string }) {
-  const pathname = usePathname() || `/${locale}`;
-  const rest = pathname.slice(locale.length + 1);
-  const row = table.find((r) => r[locale] === rest);
-  const target = (l: Locale) => `/${l}${row ? row[l] : rest}`;
+/**
+ * Reads the current page's equivalents from its hreflang tags when the menu opens. Search engines
+ * pick up URL-like strings in page data, so a table of every path must never be sent to the client.
+ * Until then, and on pages without hreflang tags, each language links to its home page.
+ */
+function readAlternates() {
+  const found: Partial<Record<Locale, string>> = {};
+  for (const l of locales) {
+    const tag = document.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${localeMeta[l].hreflang}"]`);
+    if (tag) found[l] = new URL(tag.href).pathname;
+  }
+  return found;
+}
+
+export function LangSwitcher({ locale, label }: { locale: Locale; label: string }) {
+  const [alternates, setAlternates] = useState<Partial<Record<Locale, string>>>({});
 
   return (
-    <details className="relative">
+    <details className="relative" onToggle={(e) => e.currentTarget.open && setAlternates(readAlternates())}>
       <summary className="flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-3 font-mono text-xs uppercase tracking-wider text-ink-600 hover:bg-ink/5 hover:text-ink">
         <span className="sr-only">{label}: </span>
         {localeMeta[locale].short}
@@ -21,7 +31,8 @@ export function LangSwitcher({ locale, table, label }: { locale: Locale; table: 
         {locales.map((l) => (
           <li key={l}>
             <Link
-              href={target(l)}
+              href={alternates[l] ?? `/${l}`}
+              prefetch={false}
               hrefLang={localeMeta[l].hreflang}
               lang={localeMeta[l].lang}
               aria-current={l === locale ? 'true' : undefined}

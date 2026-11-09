@@ -1,4 +1,4 @@
-import { localeMeta, locales, type Locale } from './i18n';
+import { localeMeta, type Locale } from './i18n';
 import { getDict } from '@/content';
 import { getExtra } from '@/content/extra';
 import { cities } from '@/content/cities';
@@ -30,7 +30,7 @@ export const paths = {
 /** Prefix a locale-less path with its locale. */
 export const href = (l: Locale, path: string) => `/${l}${path}`;
 
-/** Every indexable page as a function of locale — used by sitemap and the language switcher. */
+/** Every indexable page as a function of locale — used by the sitemap. */
 export function allPages(): ((l: Locale) => string)[] {
   const fr = 'fr-be' as const;
   return [
@@ -48,9 +48,4 @@ export function allPages(): ((l: Locale) => string)[] {
     ...getExtra(fr).guides.articles.map((a) => (l: Locale) => paths.guide(l, a.id)),
     ...cities.map((c) => (l: Locale) => paths.city(l, c.id)),
   ];
-}
-
-/** Map of equivalent paths across locales, for the language switcher. */
-export function alternatesTable(): Record<Locale, string>[] {
-  return allPages().map((fn) => Object.fromEntries(locales.map((l) => [l, fn(l)])) as Record<Locale, string>);
 }

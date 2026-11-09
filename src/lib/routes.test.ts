@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { locales } from './i18n';
-import { allPages, alternatesTable, paths } from './routes';
+import { allPages, paths } from './routes';
 
 describe('routes', () => {
   it('produces unique, ASCII, lowercase paths in every locale', () => {
@@ -15,7 +15,4 @@ describe('routes', () => {
     expect(paths.service('fr-be', 'encoding')).not.toBe(paths.service('nl-be', 'encoding'));
   });
 
-  it('builds a complete alternates table', () => {
-    for (const row of alternatesTable()) expect(Object.keys(row).sort()).toEqual([...locales].sort());
-  });
 });

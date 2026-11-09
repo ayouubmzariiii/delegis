@@ -52,9 +52,15 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  url.pathname = `/${pickLocale(req)}${pathname === '/' ? '' : pathname}`;
   // 307 for the language root keeps "/" neutral; hreflang x-default points to /fr-be.
-  return NextResponse.redirect(url, 307);
+  if (pathname === '/') {
+    url.pathname = `/${pickLocale(req)}`;
+    return NextResponse.redirect(url, 307);
+  }
+
+  // Any other path without a locale is not a real page: one permanent target, so it never gets indexed.
+  url.pathname = `/${defaultLocale}${pathname}`;
+  return NextResponse.redirect(url, 308);
 }
 
 export const config = {

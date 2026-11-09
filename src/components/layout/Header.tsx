@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Locale } from '@/lib/i18n';
-import { alternatesTable, href, paths } from '@/lib/routes';
+import { href, paths } from '@/lib/routes';
 import { getDict } from '@/content';
 import { getExtra } from '@/content/extra';
 import { getHook } from '@/content/hook';
@@ -37,7 +37,7 @@ export function Header({ locale }: { locale: Locale }) {
           ))}
         </nav>
         <div className="ms-auto flex items-center gap-1">
-          <LangSwitcher locale={locale} table={alternatesTable()} label={t.nav.language} />
+          <LangSwitcher locale={locale} label={t.nav.language} />
           <Link href={paths.login()} className="hidden rounded-full px-3 py-2 text-sm text-ink-600 hover:text-ink sm:block">
             {t.nav.login}
           </Link>
